@@ -9,7 +9,7 @@ namespace SimpleSocialMediaPlatform.Models
         public int Id { get; set; }
         public string Titel { get; set; }
         public string Body { get; set; }
-        public string CreateAt { get; set; }
+        public DateTime CreateAt { get; set; }
         [ForeignKey("UserInfo")]
         public string UserId { get; set; }
         [NotMapped]

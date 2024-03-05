@@ -19,6 +19,6 @@ namespace SimpleSocialMediaPlatform.Models
         [NotMapped]
         public IFormFile ImageFile { get; set; }
         public DateTime DOB { get; set; }
-        public DateTime Created { get; set; }
+        public DateTime CreateAt { get; set; }
     }
 }
