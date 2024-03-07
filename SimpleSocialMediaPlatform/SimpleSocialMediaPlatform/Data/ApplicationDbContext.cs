@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SimpleSocialMediaPlatform.Models;
 
 namespace SimpleSocialMediaPlatform.Data
 {
@@ -9,5 +10,6 @@ namespace SimpleSocialMediaPlatform.Data
             : base(options)
         {
         }
+        public DbSet<Post>? Posts { get; set; }
     }
 }
