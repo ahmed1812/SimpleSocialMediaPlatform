@@ -11,5 +11,6 @@ namespace SimpleSocialMediaPlatform.Data
         {
         }
         public DbSet<Post>? Posts { get; set; }
+        public DbSet<Comments> Comments { get; set; }
     }
 }
