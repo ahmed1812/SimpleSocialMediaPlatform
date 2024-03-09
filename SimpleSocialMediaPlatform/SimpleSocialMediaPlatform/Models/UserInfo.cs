@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace SimpleSocialMediaPlatform.Models
 {
@@ -15,9 +16,11 @@ namespace SimpleSocialMediaPlatform.Models
         public string City { get; set; }
         public string State { get; set; }
         public string ZipCode { get; set; }
-        public string Image { get; set; }
+        public string? ImageName { get; set; }
+        public string? ImageUrl { get; set; }
         [NotMapped]
-        public IFormFile ImageFile { get; set; }
+        [DisplayName("Upload File")]
+        public IFormFile? ImageFile { get; set; }
         public DateTime DOB { get; set; }
         public DateTime CreateAt { get; set; }
     }
