@@ -82,7 +82,21 @@
                 @Html.DisplayFor(modelItem => item.ImageName)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.ImageUrl)
+                <td>
+                        @{
+                            var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
+                        }
+
+                        @if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                        {
+                    // Displaying the Image
+                        <img src="@Url.Content("~/Images/" + item.ImageName)" height="100" width="80" alt="@item.ImageName" />
+                        }
+                        else
+                        {
+                            // Displaying the PDF
+                        <iframe src="@Url.Content("~/Images/" + item.ImageName)" width="600" height="500"></iframe>
+                        }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.DOB)
