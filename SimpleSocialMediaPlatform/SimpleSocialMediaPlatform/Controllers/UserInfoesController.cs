@@ -133,7 +133,7 @@ namespace SimpleSocialMediaPlatform.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,UserId,Phone,Address,Address2,City,State,ZipCode,ImageName,ImageUrl,DOB,CreateAt")] UserInfo userInfo)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,UserId,Phone,Address,Address2,City,State,ZipCode,ImageName,ImageUrl,DOB,CreateAt,ImageFile")] UserInfo userInfo)
         {
             if (id != userInfo.Id)
             {
@@ -144,11 +144,48 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 try
                 {
+                    var existingUser = await _context.userInfos.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+                    if (existingUser == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (userInfo.ImageFile != null && userInfo.ImageFile.Length > 0)
+                    {
+                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(userInfo.ImageFile.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await userInfo.ImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // Delete the old file if it exists and is different
+                        if (!string.IsNullOrEmpty(existingUser.ImageName) && existingUser.ImageName != uniqueFileName)
+                        {
+                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.ImageName);
+                            if (System.IO.File.Exists(oldFilePath))
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                        }
+
+                        // Update the database entry
+                        userInfo.ImageName = uniqueFileName;
+                        userInfo.ImageUrl = "/Images/" + uniqueFileName; // Update to store relative path
+                    }
+                    else
+                    {
+                        // Keep the old image if no new image was uploaded
+                        userInfo.ImageName = existingUser.ImageName;
+                        userInfo.ImageUrl = existingUser.ImageUrl;
+                    }
 
                     _context.Update(userInfo);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!UserInfoExists(userInfo.Id))
                     {
@@ -156,6 +193,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                     }
                     else
                     {
+                        // Log the exception
                         throw;
                     }
                 }
