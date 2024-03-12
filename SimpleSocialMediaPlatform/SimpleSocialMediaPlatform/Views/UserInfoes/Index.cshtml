@@ -82,20 +82,27 @@
                 @Html.DisplayFor(modelItem => item.ImageName)
             </td>
             <td>
-                    @{
-                        var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
-                    }
-
-                    @if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                    @if (!string.IsNullOrEmpty(item.ImageName))
                     {
-                    // Displaying the Image
-                        <img src="@Url.Content("~/Images/" + item.ImageName)" height="100" width="80" alt="@item.ImageName" />
+                        var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
+
+
+                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                        {
+                        // Displaying the Image
+                            <img src="@Url.Content("~/Images/" + item.ImageName)" height="100" width="80" alt="@item.ImageName" />
+                        }
+                        else
+                        {
+                        // Displaying the PDF
+                            <iframe src="@Url.Content("~/Images/" + item.ImageName)" width="100" height="80"></iframe>
+                        }
                     }
                     else
                     {
-                        // Displaying the PDF
-                        <iframe src="@Url.Content("~/Images/" + item.ImageName)" width="100" height="80"></iframe>
+                        @:No image or PDF available.
                     }
+
 
             </td>
             <td>
