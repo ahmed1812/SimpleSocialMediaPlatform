@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using SimpleSocialMediaPlatform.Data;
 using SimpleSocialMediaPlatform.Models;
 
@@ -30,10 +31,11 @@ namespace SimpleSocialMediaPlatform.Controllers
             //{
             //    postVM.UserInfoDetails = info;
 
-            //     var allUserPost = await _context.Posts.Where(post => post.UserId == info.UserId).ToListAsync();
-            //    foreach(var post in allUserPost)
+            //    var allUserPost = await _context.Posts.Where(post => post.UserId == info.UserId).ToListAsync();
+            //    postVM.UserPosts = allUserPost;
+            //    foreach (var post in allUserPost)
             //    {
-            //        postVM.UserPosts = post;
+            //        //postVM.UserPosts = post;
             //        var allPostComment = await _context.Comments.Where(com => com.PostId == post.Id).ToListAsync();
 
             //        postVM.UserComments = allPostComment;
@@ -43,20 +45,37 @@ namespace SimpleSocialMediaPlatform.Controllers
             //}
 
             //return View(all);
-            IEnumerable<UserPostCommentViewModel> userPerPost = (from userInfo in _context.userInfos
-                                                                 from post in _context.Posts
-                                                                 where userInfo.UserId == post.UserId
-                                                                 orderby post.Id
-                                                                 select new UserPostCommentViewModel
-                                                                 {
-                                                                     UserInfoDetails = userInfo,
-                                                                     UserPosts = (_context.Posts.Where(x => x.UserId == userInfo.UserId && x.Id == post.Id)).ToList(),
-                                                                     UserComments = (_context.Comments.Where(x => x.Id == post.Id)).ToList()
-                                                                 }).ToList();
-            return View(userPerPost);
+
+
+            //IEnumerable<UserPostCommentViewModel> userPerPost = (from userInfo in _context.userInfos
+            //                                                     from post in _context.Posts
+            //                                                     where userInfo.UserId == post.UserId
+            //                                                     orderby post.Id
+            //                                                     select new UserPostCommentViewModel
+            //                                                     {
+            //                                                         UserInfoDetails = userInfo,
+            //                                                         UserPosts = (_context.Posts.Where(x => x.UserId == userInfo.UserId && x.Id == post.Id)).ToList(),
+            //                                                         UserComments = (_context.Comments.Where(x => x.Id == post.Id)).ToList()
+            //                                                     }).ToList();
+            //return View(userPerPost);
+
+          
+                var userPerPost = await (from userInfo in _context.userInfos
+                                         join post in _context.Posts on userInfo.UserId equals post.UserId
+                                         orderby post.Id
+                                         select new UserPostCommentViewModel
+                                         {
+                                             UserInfoDetails = userInfo,
+                                             UserPosts = new List<Post> { post },
+                                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList()
+                                         }).ToListAsync();
+
+                return View(userPerPost);
+            
+
 
         }
-    
+
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)
         {

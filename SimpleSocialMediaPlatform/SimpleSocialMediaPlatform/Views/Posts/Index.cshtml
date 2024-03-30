@@ -46,13 +46,14 @@
                 {
                    
                         <div class="comment-content">
-                            <div>@Html.DisplayFor(modelItem => c.UserId)</div>
-                            <div>@Html.DisplayFor(modelItem => c.PostId)</div>
+                        <div>UserId @Html.DisplayFor(modelItem => c.UserId)</div>
+                            <div>PostId @Html.DisplayFor(modelItem => c.PostId)</div>
                             <div>@Html.DisplayFor(modelItem => c.Body)</div>
                         </div>
-                    
                 }
             </div>
+            <a asp-action="Edit" asp-route-id="@p.Id">Edit</a>
+            <a asp-action="Delete" asp-route-id="@p.Id">Delete</a>
         }
     </div>
 }

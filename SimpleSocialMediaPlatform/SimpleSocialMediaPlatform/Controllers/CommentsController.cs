@@ -48,6 +48,8 @@ namespace SimpleSocialMediaPlatform.Controllers
         // GET: Comments/Create
         public IActionResult Create()
         {
+            ViewBag.Users = _context.userInfos.ToList(); 
+            ViewBag.Posts = _context.Posts.ToList();
             return View();
         }
 
