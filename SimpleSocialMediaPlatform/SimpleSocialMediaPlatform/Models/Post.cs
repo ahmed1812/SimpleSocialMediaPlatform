@@ -14,5 +14,10 @@ namespace SimpleSocialMediaPlatform.Models
         public string? UserId { get; set; }
         [NotMapped]
         public UserInfo? PostUserInfo { get; set; } // This is used for RunTime ONLY
+
+        public static implicit operator List<object>(Post v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

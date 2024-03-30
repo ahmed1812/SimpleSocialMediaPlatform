@@ -22,11 +22,41 @@ namespace SimpleSocialMediaPlatform.Controllers
         // GET: Posts
         public async Task<IActionResult> Index()
         {
-              return _context.Posts != null ? 
-                          View(await _context.Posts.ToListAsync()) :
-                          Problem("Entity set 'ApplicationDbContext.Posts'  is null.");
-        }
+            //var postVM = new UserPostCommentViewModel();
+            //var userInfos = await _context.userInfos.ToListAsync();
+            //var rss = await _context.Posts.ToListAsync();
+            //List<UserPostCommentViewModel> all = new List<UserPostCommentViewModel>();
+            //foreach (var info in userInfos)
+            //{
+            //    postVM.UserInfoDetails = info;
 
+            //     var allUserPost = await _context.Posts.Where(post => post.UserId == info.UserId).ToListAsync();
+            //    foreach(var post in allUserPost)
+            //    {
+            //        postVM.UserPosts = post;
+            //        var allPostComment = await _context.Comments.Where(com => com.PostId == post.Id).ToListAsync();
+
+            //        postVM.UserComments = allPostComment;
+
+            //    }
+            //    all.Add(postVM);
+            //}
+
+            //return View(all);
+            IEnumerable<UserPostCommentViewModel> userPerPost = (from userInfo in _context.userInfos
+                                                                 from post in _context.Posts
+                                                                 where userInfo.UserId == post.UserId
+                                                                 orderby post.Id
+                                                                 select new UserPostCommentViewModel
+                                                                 {
+                                                                     UserInfoDetails = userInfo,
+                                                                     UserPosts = (_context.Posts.Where(x => x.UserId == userInfo.UserId && x.Id == post.Id)).ToList(),
+                                                                     UserComments = (_context.Comments.Where(x => x.Id == post.Id)).ToList()
+                                                                 }).ToList();
+            return View(userPerPost);
+
+        }
+    
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)
         {

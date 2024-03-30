@@ -1,53 +1,58 @@
-﻿@model IEnumerable<SimpleSocialMediaPlatform.Models.Post>
+﻿@model IEnumerable<SimpleSocialMediaPlatform.Models.UserPostCommentViewModel>
 
 @{
     ViewData["Title"] = "Index";
 }
+
+<style>
+    .post-container {
+        border: 1px solid #ccc;
+        margin-bottom: 20px;
+        padding: 10px;
+    }
+
+    .post-header {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .comment-container {
+        margin-left: 20px;
+        border-left: 2px solid #ccc;
+        padding-left: 10px;
+    }
+</style>
 
 <h1>Index</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Titel)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Body)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreateAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserId)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Titel)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Body)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreateAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UserId)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+
+@foreach (var item in Model)
+{
+    <div class="post-container">
+        <div class="post-header">
+            @Html.DisplayFor(modelItem => item.UserInfoDetails.FullName)
+        </div>
+        @foreach (var p in item.UserPosts)
+        {
+            <div class="post-content">
+                <div>@Html.DisplayFor(modelItem => p.Titel)</div>
+                <div>@Html.DisplayFor(modelItem => p.Body)</div>
+            </div>
+            <div class="comment-container">
+                @foreach (var c in item.UserComments)
+                {
+                   
+                        <div class="comment-content">
+                            <div>@Html.DisplayFor(modelItem => c.UserId)</div>
+                            <div>@Html.DisplayFor(modelItem => c.PostId)</div>
+                            <div>@Html.DisplayFor(modelItem => c.Body)</div>
+                        </div>
+                    
+                }
+            </div>
+        }
+    </div>
 }
-    </tbody>
-</table>
