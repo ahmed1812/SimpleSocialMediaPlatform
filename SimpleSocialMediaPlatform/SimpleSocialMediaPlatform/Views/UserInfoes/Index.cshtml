@@ -4,122 +4,149 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
-
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.FullName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UserId)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Phone)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Address)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Address2)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.City)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.State)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ZipCode)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ImageUrl)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.DOB)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreateAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UserId)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Phone)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Address)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Address2)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.City)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.State)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ZipCode)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ImageName)
-            </td>
-            <td>
-                    @if (!string.IsNullOrEmpty(item.ImageName))
-                    {
-                        var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
 
 
-                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+<div class="container">
+    <h1>Index</h1>
+
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>User ID</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Address 2</th>
+                <th>City</th>
+                <th>State</th>
+                <th>Zip Code</th>
+                <th>Image</th>
+                <th>Date of Birth</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@Html.DisplayFor(modelItem => item.FullName)</td>
+                    <td>@Html.DisplayFor(modelItem => item.UserId)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Phone)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Address)</td>
+                    <td>@Html.DisplayFor(modelItem => item.Address2)</td>
+                    <td>@Html.DisplayFor(modelItem => item.City)</td>
+                    <td>@Html.DisplayFor(modelItem => item.State)</td>
+                    <td>@Html.DisplayFor(modelItem => item.ZipCode)</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.ImageName))
                         {
-                        // Displaying the Image
-                            <img src="@Url.Content("~/Images/" + item.ImageName)" height="100" width="80" alt="@item.ImageName" />
+                            var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
+
+                            if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                            {
+                                // Displaying the Image
+                                <img src="@Url.Content("~/Images/" + item.ImageName)" alt="@item.ImageName" />
+                            }
+                            else if (fileExtension == ".pdf")
+                            {
+                                // Displaying the PDF
+                                <iframe src="@Url.Content("~/Images/" + item.ImageName)"></iframe>
+                            }
+                            else
+                            {
+                                @:No image or PDF available.
+                            }
                         }
                         else
                         {
-                        // Displaying the PDF
-                            <iframe src="@Url.Content("~/Images/" + item.ImageName)" width="100" height="80"></iframe>
+                            @:No image or PDF available.
                         }
-                    }
-                    else
-                    {
-                        @:No image or PDF available.
-                    }
+                    </td>
+                    <td>@Html.DisplayFor(modelItem => item.DOB)</td>
+                    <td>@Html.DisplayFor(modelItem => item.CreateAt)</td>
+                    <td class="action-links">
+                        <a asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 
+    <div class="bottom-style">
+        <p>Additional content or footer information can go here.</p>
+    </div>
+</div>
 
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.DOB)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreateAt)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+                    <!-- CSS styles -->
+<style>
+    /* Table styles */
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #ddd;
+    }
 
+    /* Table header styles */
+    .table th {
+        background-color: #f2f2f2;
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
 
+    /* Table body styles */
+    .table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
 
+    /* Table hover effect */
+    .table tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    /* Image styling */
+    .table img {
+        height: 80px;
+        width: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+
+    /* PDF styling */
+    .table iframe {
+        height: 80px;
+        width: 100px;
+        border: none;
+    }
+
+    /* Actions styling */
+    .action-links a {
+        margin-right: 5px;
+        color: #385898;
+        text-decoration: none;
+    }
+
+    /* Responsive styles */
+    media (max-width: 768px) {
+        .table td,
+        .table th {
+            font-size: 14px;
+        }
+    }
+
+    /* Bottom style */
+    .bottom-style {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 14px;
+        color: #666;
+    }
+</style>

@@ -5,55 +5,92 @@
 }
 
 <style>
-    .post-container {
-        border: 1px solid #ccc;
-        margin-bottom: 20px;
-        padding: 10px;
+    /* Main container */
+    .container {
+        max-width: 800px;
+        margin: 20px auto;
     }
 
+    /* Post container */
+    .post-container {
+        background-color: #fff;
+        border: 1px solid #dddfe2;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Post header */
     .post-header {
         font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    /* Post content */
+    .post-content {
+        margin-bottom: 15px;
+    }
+
+    /* Comment container */
+    .comment-container {
+        margin-left: 30px;
+        padding-left: 10px;
+        border-left: 2px solid #dddfe2;
+    }
+
+    /* Comment content */
+    .comment-content {
         margin-bottom: 5px;
     }
 
-    .comment-container {
-        margin-left: 20px;
-        border-left: 2px solid #ccc;
-        padding-left: 10px;
+    /* Post actions */
+    .post-actions {
+        margin-top: 10px;
+    }
+
+    /* Action links */
+    .action-link {
+        margin-right: 10px;
+        color: #385898;
+        text-decoration: none;
     }
 </style>
 
-<h1>Index</h1>
+<div class="container">
+    <h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
 
-@foreach (var item in Model)
-{
-    <div class="post-container">
-        <div class="post-header">
-            @Html.DisplayFor(modelItem => item.UserInfoDetails.FullName)
-        </div>
-        @foreach (var p in item.UserPosts)
-        {
-            <div class="post-content">
-                <div>@Html.DisplayFor(modelItem => p.Titel)</div>
-                <div>@Html.DisplayFor(modelItem => p.Body)</div>
+    @foreach (var item in Model)
+    {
+        <div class="post-container">
+            <div class="post-header">
+                @Html.DisplayFor(modelItem => item.UserInfoDetails.FullName)
             </div>
-            <div class="comment-container">
-                @foreach (var c in item.UserComments)
-                {
-                   
+            @foreach (var p in item.UserPosts)
+            {
+                <div class="post-content">
+                    <div class="post-title">@Html.DisplayFor(modelItem => p.Titel)</div>
+                    <div class="post-body">@Html.DisplayFor(modelItem => p.Body)</div>
+                </div>
+                <div class="comment-container">
+                    @foreach (var c in item.UserComments)
+                    {
                         <div class="comment-content">
-                        <div>UserId @Html.DisplayFor(modelItem => c.UserId)</div>
-                            <div>PostId @Html.DisplayFor(modelItem => c.PostId)</div>
-                            <div>@Html.DisplayFor(modelItem => c.Body)</div>
+                            <div><strong>UserId:</strong> @Html.DisplayFor(modelItem => c.UserId)</div>
+                            <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div>
+                            <div><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
                         </div>
-                }
-            </div>
-            <a asp-action="Edit" asp-route-id="@p.Id">Edit</a>
-            <a asp-action="Delete" asp-route-id="@p.Id">Delete</a>
-        }
-    </div>
-}
+                    }
+                </div>
+                <div class="post-actions">
+                    <a asp-action="Edit" asp-route-id="@p.Id" class="action-link">Edit</a>
+                    <a asp-action="Delete" asp-route-id="@p.Id" class="action-link">Delete</a>
+                </div>
+            }
+        </div>
+    }
+</div>

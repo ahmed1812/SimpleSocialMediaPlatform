@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace SimpleSocialMediaPlatform.Models
 {
@@ -15,9 +16,10 @@ namespace SimpleSocialMediaPlatform.Models
         [NotMapped]
         public UserInfo? PostUserInfo { get; set; } // This is used for RunTime ONLY
 
-        public static implicit operator List<object>(Post v)
-        {
-            throw new NotImplementedException();
-        }
+        public string? ImageName { get; set; }
+        public string? ImageUrl { get; set; }
+        [NotMapped]
+        [DisplayName("Upload File")]
+        public IFormFile? ImageFile { get; set; }
     }
 }

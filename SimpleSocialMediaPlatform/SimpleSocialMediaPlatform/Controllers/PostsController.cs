@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,13 @@ namespace SimpleSocialMediaPlatform.Controllers
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public PostsController(ApplicationDbContext context)
+
+        public PostsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Posts
@@ -105,13 +109,53 @@ namespace SimpleSocialMediaPlatform.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Titel,Body,CreateAt,UserId")] Post post)
+        public async Task<IActionResult> Create(Post post)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(post);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    if (post.ImageFile != null && post.ImageFile.Length > 0)
+                    {
+                        // Constructing a server-relative path
+                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+
+                        // Ensure a unique file name
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.ImageFile.FileName);
+
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        // Ensuring the directory exists
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+
+                        // Saving the file
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await post.ImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // Update your model as necessary
+                        post.ImageName = uniqueFileName;
+                        post.ImageUrl = "/Images/" + uniqueFileName; // Relative path
+
+                        _context.Add(post);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        // Handle the case when no image is uploaded
+                        ModelState.AddModelError("ImageFile", "Please upload an image file.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception or handle it appropriately
+                    ModelState.AddModelError("", "An error occurred while saving the image.");
+                }
             }
             return View(post);
         }
@@ -148,10 +192,48 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 try
                 {
+                    var existingUser = await _context.userInfos.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+                    if (existingUser == null)
+                    {
+                        return NotFound();
+                    }
+
+                    if (post.ImageFile != null && post.ImageFile.Length > 0)
+                    {
+                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.ImageFile.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await post.ImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // Delete the old file if it exists and is different
+                        if (!string.IsNullOrEmpty(existingUser.ImageName) && existingUser.ImageName != uniqueFileName)
+                        {
+                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.ImageName);
+                            if (System.IO.File.Exists(oldFilePath))
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                        }
+
+                        // Update the database entry
+                        post.ImageName = uniqueFileName;
+                        post.ImageUrl = "/Images/" + uniqueFileName; // Update to store relative path
+                    }
+                    else
+                    {
+                        // Keep the old image if no new image was uploaded
+                        post.ImageName = existingUser.ImageName;
+                        post.ImageUrl = existingUser.ImageUrl;
+                    }
+
                     _context.Update(post);
                     await _context.SaveChangesAsync();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (DbUpdateConcurrencyException ex)
                 {
                     if (!PostExists(post.Id))
                     {
@@ -159,6 +241,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                     }
                     else
                     {
+                        // Log the exception
                         throw;
                     }
                 }

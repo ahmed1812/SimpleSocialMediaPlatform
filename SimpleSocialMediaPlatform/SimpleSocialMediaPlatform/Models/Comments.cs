@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SimpleSocialMediaPlatform.Models
 {
@@ -11,5 +13,10 @@ namespace SimpleSocialMediaPlatform.Models
         //[ForeignKey("PostId")]
         public int PostId { get; set; }
         public DateTime CreateAt { get; set; }
+        public string? ImageName { get; set; }
+        public string? ImageUrl { get; set; }
+        [NotMapped]
+        [DisplayName("Upload File")]
+        public IFormFile? ImageFile { get; set; }
     }
 }
