@@ -24,6 +24,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.CreateAt)
             </th>
+            <th>Image</th>
             <th></th>
         </tr>
     </thead>
@@ -42,6 +43,31 @@
             <td>
                 @Html.DisplayFor(modelItem => item.CreateAt)
             </td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ImageName))
+                    {
+                        var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
+
+                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                        {
+                            // Displaying the Image
+                            <img src="@Url.Content("~/Images/" + item.ImageName)" alt="@item.ImageName" />
+                        }
+                        else if (fileExtension == ".pdf")
+                        {
+                            // Displaying the PDF
+                            <iframe src="@Url.Content("~/Images/" + item.ImageName)"></iframe>
+                        }
+                        else
+                        {
+                            @:No image or PDF available.
+                        }
+                    }
+                    else
+                    {
+                        @:No image or PDF available.
+                    }
+                </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-action="Details" asp-route-id="@item.Id">Details</a> |

@@ -27,58 +27,22 @@ namespace SimpleSocialMediaPlatform.Controllers
         // GET: Posts
         public async Task<IActionResult> Index()
         {
-            //var postVM = new UserPostCommentViewModel();
-            //var userInfos = await _context.userInfos.ToListAsync();
-            //var rss = await _context.Posts.ToListAsync();
-            //List<UserPostCommentViewModel> all = new List<UserPostCommentViewModel>();
-            //foreach (var info in userInfos)
-            //{
-            //    postVM.UserInfoDetails = info;
-
-            //    var allUserPost = await _context.Posts.Where(post => post.UserId == info.UserId).ToListAsync();
-            //    postVM.UserPosts = allUserPost;
-            //    foreach (var post in allUserPost)
-            //    {
-            //        //postVM.UserPosts = post;
-            //        var allPostComment = await _context.Comments.Where(com => com.PostId == post.Id).ToListAsync();
-
-            //        postVM.UserComments = allPostComment;
-
-            //    }
-            //    all.Add(postVM);
-            //}
-
-            //return View(all);
+            var userPerPost = await (from userInfo in _context.userInfos
+                                     join post in _context.Posts on userInfo.UserId equals post.UserId
+                                     orderby post.Id
+                                     select new UserPostCommentViewModel
+                                     {
+                                         UserInfoDetails = userInfo,
+                                         UserPosts = new List<Post> { post },
+                                         UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
+                                     }).ToListAsync();
 
 
-            //IEnumerable<UserPostCommentViewModel> userPerPost = (from userInfo in _context.userInfos
-            //                                                     from post in _context.Posts
-            //                                                     where userInfo.UserId == post.UserId
-            //                                                     orderby post.Id
-            //                                                     select new UserPostCommentViewModel
-            //                                                     {
-            //                                                         UserInfoDetails = userInfo,
-            //                                                         UserPosts = (_context.Posts.Where(x => x.UserId == userInfo.UserId && x.Id == post.Id)).ToList(),
-            //                                                         UserComments = (_context.Comments.Where(x => x.Id == post.Id)).ToList()
-            //                                                     }).ToList();
-            //return View(userPerPost);
+           
 
-          
-                var userPerPost = await (from userInfo in _context.userInfos
-                                         join post in _context.Posts on userInfo.UserId equals post.UserId
-                                         orderby post.Id
-                                         select new UserPostCommentViewModel
-                                         {
-                                             UserInfoDetails = userInfo,
-                                             UserPosts = new List<Post> { post },
-                                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList()
-                                         }).ToListAsync();
-
-                return View(userPerPost);
-            
-
-
+            return View(userPerPost);
         }
+
 
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -113,6 +77,8 @@ namespace SimpleSocialMediaPlatform.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Setting the date here
+                post.CreateAt = DateTime.Now;
                 try
                 {
                     if (post.ImageFile != null && post.ImageFile.Length > 0)
@@ -282,6 +248,11 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 _context.Posts.Remove(post);
             }
+            string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", post.ImageName);
+            //string uniqueFileName = imageClass.ImageFile.FileName;
+            //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+            if (System.IO.File.Exists(imagePath))
+                System.IO.File.Delete(imagePath);
             
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

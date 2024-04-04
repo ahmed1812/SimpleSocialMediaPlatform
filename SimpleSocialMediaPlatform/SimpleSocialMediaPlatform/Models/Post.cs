@@ -21,5 +21,6 @@ namespace SimpleSocialMediaPlatform.Models
         [NotMapped]
         [DisplayName("Upload File")]
         public IFormFile? ImageFile { get; set; }
+       
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace SimpleSocialMediaPlatform.Controllers
     public class CommentsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public CommentsController(ApplicationDbContext context)
+        public CommentsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: Comments
@@ -58,13 +61,53 @@ namespace SimpleSocialMediaPlatform.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Body,UserId,PostId,CreateAt")] Comments comments)
+        public async Task<IActionResult> Create( Comments comments)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(comments);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                try
+                {
+                    if (comments.ImageFile != null && comments.ImageFile.Length > 0)
+                    {
+                        // Constructing a server-relative path
+                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+
+                        // Ensure a unique file name
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(comments.ImageFile.FileName);
+
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        // Ensuring the directory exists
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                        }
+
+                        // Saving the file
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await comments.ImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // Update your model as necessary
+                        comments.ImageName = uniqueFileName;
+                        comments.ImageUrl = "/Images/" + uniqueFileName; // Relative path
+
+                        _context.Add(comments);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    else
+                    {
+                        // Handle the case when no image is uploaded
+                        ModelState.AddModelError("ImageFile", "Please upload an image file.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Log the exception or handle it appropriately
+                    ModelState.AddModelError("", "An error occurred while saving the image.");
+                }
             }
             return View(comments);
         }
@@ -90,7 +133,7 @@ namespace SimpleSocialMediaPlatform.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Body,UserId,PostId,CreateAt")] Comments comments)
+        public async Task<IActionResult> Edit(int id, Comments comments)
         {
             if (id != comments.Id)
             {
@@ -101,7 +144,47 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 try
                 {
-                    _context.Update(comments);
+                    var existingComment = await _context.Comments.FindAsync(id);
+                    if (existingComment == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // Update existing comment properties
+                    existingComment.Body = comments.Body;
+                    existingComment.UserId = comments.UserId;
+                    existingComment.PostId = comments.PostId;
+                    existingComment.CreateAt = comments.CreateAt;
+
+                    if (comments.ImageFile != null && comments.ImageFile.Length > 0)
+                    {
+                        // Handle image upload
+                        var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(comments.ImageFile.FileName);
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        // Save the new image file
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await comments.ImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // Delete the old image file
+                        if (!string.IsNullOrEmpty(existingComment.ImageName))
+                        {
+                            var oldFilePath = Path.Combine(uploadsFolder, existingComment.ImageName);
+                            if (System.IO.File.Exists(oldFilePath))
+                            {
+                                System.IO.File.Delete(oldFilePath);
+                            }
+                        }
+
+                        // Update comment's image properties
+                        existingComment.ImageName = uniqueFileName;
+                        existingComment.ImageUrl = "/Images/" + uniqueFileName;
+                    }
+
+                    _context.Update(existingComment);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -112,6 +195,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                     }
                     else
                     {
+                        // Log the exception
                         throw;
                     }
                 }
@@ -119,6 +203,7 @@ namespace SimpleSocialMediaPlatform.Controllers
             }
             return View(comments);
         }
+
 
         // GET: Comments/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -145,17 +230,33 @@ namespace SimpleSocialMediaPlatform.Controllers
         {
             if (_context.Comments == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Comments'  is null.");
+                return Problem("Entity set 'ApplicationDbContext.Comments' is null.");
             }
+
+            // Find the comment by id
             var comments = await _context.Comments.FindAsync(id);
-            if (comments != null)
+            if (comments == null)
             {
-                _context.Comments.Remove(comments);
+                return NotFound();
             }
-            
+
+            // Delete the comment
+            _context.Comments.Remove(comments);
+
+            // Delete associated image file
+            if (!string.IsNullOrEmpty(comments.ImageName))
+            {
+                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", comments.ImageName);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
+            }
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool CommentsExists(int id)
         {
