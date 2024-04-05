@@ -96,6 +96,7 @@
                 <div class="post-content">
                     <div class="post-title">@Html.DisplayFor(modelItem => p.Titel)</div>
                     <div class="post-body">@Html.DisplayFor(modelItem => p.Body)</div>
+                    <div class="post-body">@Html.DisplayFor(modelItem => p.CreateAt)</div>
                 </div>
                 <div class="comment-container">
                     @foreach (var c in item.UserComments)
@@ -105,7 +106,23 @@
                             <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div>
                             <div><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
                         </div>
+
+                        
                     }
+                    <form asp-controller="Comments" asp-action="CreateComment" method="post" enctype="multipart/form-data" >
+                        <input type="hidden" name="PostId" value="@p.Id" />
+                        <input  name="UserId" value="@p.UserId" />
+                        <div class="form-group">
+                            <label for="Body">Comment</label>
+                            <textarea name="Body" class="form-control"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="UserId">User</label>
+
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Comment</button>
+                    </form>
+
                 </div>
                 <div class="post-actions">
                     <a asp-action="Edit" asp-route-id="@p.Id" class="action-link">Edit</a>
@@ -115,3 +132,5 @@
         </div>
     }
 </div>
+
+
