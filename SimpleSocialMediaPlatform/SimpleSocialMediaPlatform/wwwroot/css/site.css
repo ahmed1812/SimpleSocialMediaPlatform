@@ -16,3 +16,288 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Main container */
+.container-p {
+    max-width: 500px; /* Adjusted for wider layout */
+    margin: 20px auto;
+    font-family: Arial, sans-serif; /* Match font to image */
+}
+
+/* Post container */
+.post-container {
+    background-color: #F0F2F5; /* Lighter grey background */
+    border: 1px solid #ccd0d5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Post header */
+.post-header {
+    font-weight: bold;
+    color: #4b4f56; /* Dark grey color */
+    margin-bottom: 10px;
+}
+
+/* Post content */
+.post-content {
+    color: #1c1e21; /* Dark text color for readability */
+    margin-bottom: 15px;
+}
+
+/* Comment container */
+.comment-container {
+    background-color: #F2F3F5; /* Slightly different background for comments */
+    margin-left: 30px;
+    padding-left: 10px;
+    border-left: 2px solid #dddfe2;
+}
+
+/* Comment content */
+.comment-content {
+    color: #606770; /* Grey text color for comments */
+    margin-bottom: 5px;
+}
+
+/* Post actions */
+.post-actions {
+    border-top: 1px solid #ccd0d5; /* Separator for actions */
+    padding-top: 10px;
+    margin-top: 10px;
+    text-align: right; /* Align action links to the right */
+}
+
+/* Action links */
+.action-link {
+    margin-right: 10px;
+    color: #385898;
+    text-decoration: none;
+    font-size: 0.875rem; /* Slightly smaller font size for actions */
+}
+
+
+/* Styles for the user image */
+.user-image {
+    width: 70px; /* Fixed width, you can adjust this */
+    height: 70px; /* Fixed height to match width */
+    border-radius: 50%; /* Circular image */
+    object-fit: cover; /* Ensures the image covers the area without stretching */
+    border: 2px solid #ddd; /* A light grey border around the image */
+    margin-bottom: 10px; /* Space below the image */
+}
+
+/* Styles for the user PDF iframe */
+.user-pdf {
+    border: none; /* No border */
+    width: 100%; /* Full width */
+    height: 500px; /* Enough height to show PDF content */
+    margin-bottom: 10px; /* Space below the PDF */
+}
+
+/* Styles for when no image or PDF is available */
+.no-image-pdf {
+    font-style: italic; /* Italicize the text */
+    color: #757575; /* A lighter shade of grey for the text */
+    margin-bottom: 10px; /* Space below the message */
+}
+
+
+/* Image styles within a post */
+.post-image {
+    width: 100%; /* Full width of the container */
+    max-width: 600px; /* Maximum width, can adjust based on design */
+    border-radius: 8px; /* Rounded corners */
+    margin-top: 10px; /* Space above the image */
+    margin-bottom: 10px; /* Space below the image */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
+
+/* PDF iframe styles within a post */
+.post-pdf {
+    width: 100%; /* Full width of the container */
+    height: 500px; /* Fixed height for PDF viewer */
+    border: none; /* No border */
+    margin-top: 10px; /* Space above the PDF */
+    margin-bottom: 10px; /* Space below the PDF */
+}
+
+/* No content available message */
+.no-content {
+    color: #606770; /* Grey text color for messages */
+    font-style: italic; /* Italicize the text */
+    margin-top: 10px; /* Space above the message */
+    margin-bottom: 10px; /* Space below the message */
+}
+
+/* Container for all comments */
+.comment-container {
+    padding: 10px;
+    background-color: #f2f3f5;
+    border-radius: 6px;
+    margin-top: 15px;
+}
+
+/* Individual comment block */
+.comment-content {
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}
+
+    /* User ID and Post ID styles */
+    .comment-content div {
+        color: #365899;
+        font-weight: normal;
+        margin-bottom: 5px;
+    }
+
+    /* Comment body text */
+    .comment-content .comment-body {
+        margin-top: 5px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #1d2129;
+    }
+
+    /* Image within comment */
+    .comment-content img {
+        max-width: 100%;
+        border-radius: 4px;
+        margin-top: 8px;
+    }
+
+    /* Iframe for PDF within comment */
+    .comment-content iframe {
+        width: 100%;
+        height: auto;
+        border: none;
+        margin-top: 8px;
+    }
+
+    /* No content message */
+    .comment-content .no-content {
+        font-style: italic;
+        color: #606770;
+    }
+
+/* Form field styling */
+.form-control {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 8px;
+    border: 1px solid #ccd0d5;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Button styling */
+.btn-primary {
+    background-color: #4267b2;
+    border-color: #4267b2;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    display: inline-block;
+}
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: #365899;
+        border-color: #365899;
+    }
+
+/* Overall form styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Label styling to match Facebook's clean look */
+label {
+    display: block;
+    margin-bottom: .5rem;
+    font-size: .875rem;
+    color: #606770;
+}
+
+/* Textarea styling for comments */
+textarea.form-control {
+    width: 100%;
+    height: 80px; /* Fixed height for text area */
+    padding: 8px 12px; /* Padding for text inside textarea */
+    border: 1px solid #ccd0d5;
+    border-radius: 4px; /* Slightly rounded corners for the text area */
+    resize: none; /* Disable resizing of the textarea */
+}
+
+/* Button styling to match the Facebook theme */
+button.btn-primary {
+    background-color: #4267b2; /* Facebook blue */
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    font-size: .875rem;
+    border-radius: 4px; /* Rounded corners for button */
+    cursor: pointer; /* Cursor to pointer to indicate clickable */
+    font-weight: 600; /* Bold text for the button */
+}
+
+    button.btn-primary:hover {
+        background-color: #365899; /* Slightly darker blue on hover */
+    }
+
+/* Styling for hidden inputs to keep them out of sight */
+input[type="hidden"] {
+    display: none;
+}
+/* Style for the container of the post body, image upload, and submit button */
+.post-body-group {
+    background-color: #fff; /* White background */
+    border: 1px solid #ccd0d5; /* Light grey border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 15px; /* Padding inside the box */
+    margin-bottom: 15px; /* Space below the box */
+}
+
+/* Styling for form inputs and submit button */
+.form-control, .btn-primary {
+    width: 100%; /* Full width for controls */
+    margin-bottom: 10px; /* Space between the controls */
+    padding: 10px 15px; /* Padding for better touch */
+    border: 1px solid #ccd0d5;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* Button specific styling */
+.btn-primary {
+    background-color: #4267b2; /* Facebook blue */
+    border: none; /* No border for a cleaner look */
+    color: white; /* White text for better readability */
+    cursor: pointer; /* Pointer to indicate a clickable button */
+    font-weight: bold; /* Bold text */
+    text-align: center; /* Centered text within the button */
+    transition: background-color 0.2s ease-in-out; /* Smooth transition for hover effect */
+}
+
+    .btn-primary:hover {
+        background-color: #365899; /* Slightly darker blue on hover for feedback */
+    }
+
+/* Accessible but visually hidden labels for screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}

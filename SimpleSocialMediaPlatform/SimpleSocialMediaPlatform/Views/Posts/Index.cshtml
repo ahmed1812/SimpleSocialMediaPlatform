@@ -5,120 +5,206 @@
 @{
     ViewData["Title"] = "Index";
 }
-
 <style>
-    /* Main container */
-    .container {
-        max-width: 800px;
-        margin: 20px auto;
+    #image-upload-name {
+        margin-left: 10px;
+        font-style: italic;
     }
 
-    /* Post container */
-    .post-container {
-        background-color: #fff;
-        border: 1px solid #dddfe2;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        padding: 20px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
 
-    /* Post header */
-    .post-header {
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    /* Post content */
-    .post-content {
-        margin-bottom: 15px;
-    }
-
-    /* Comment container */
-    .comment-container {
-        margin-left: 30px;
-        padding-left: 10px;
-        border-left: 2px solid #dddfe2;
-    }
-
-    /* Comment content */
-    .comment-content {
-        margin-bottom: 5px;
-    }
-
-    /* Post actions */
-    .post-actions {
-        margin-top: 10px;
-    }
-
-    /* Action links */
-    .action-link {
-        margin-right: 10px;
-        color: #385898;
-        text-decoration: none;
-    }
 </style>
 
-<div class="container">
+<div class="container-p">
 
+    <!-- Modal Trigger Button (example) -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postModal">
+        Create Post
+    </button>
 
-   <form asp-action="Create" method="post" enctype="multipart/form-data">
-        <!-- Form fields for new post -->
-        <!-- Make sure to adjust the asp-for attributes to match the NewPost property -->
-        <label for="Body" class="sr-only">Body</label>
-        <input type="text" id="Body" name="Body" class="form-control">
+    <!-- Modal Structure -->
+    <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="postModalLabel">Create Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Your Form Starts Here -->
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        
+                        <div class="mb-3">
+                            <textarea id="Body" name="Body" class="form-control" placeholder="What's on your mind?" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="UserId" class="form-label">UserId</label>
+                            <input type="text" id="UserId" name="UserId" class="form-control">
+                        </div>
 
-        <label for="UserId" class="sr-only">UserId</label>
-        <input type="text" id="UserId" name="UserId" class="form-control">
-
-        <div class="form-group">
-            <label for="ImageFile" class="control-label">Upload Image</label>
-            <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*" />
+                        <div class="mb-3">
+                            <label for="ImageFile" class="form-label btn btn-light">Upload Image</label>
+                            <input type="file" id="ImageFile" name="ImageFile" class="form-control d-none" accept="image/*">
+                            <span id="image-upload-name"></span>
+                        </div>
+                       
+                        <div>
+                            <input type="submit" value="Post" class="btn btn-primary">
+                        </div>
+                    </form>
+                    <!-- Your Form Ends Here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <input type="submit" value="Create" class="btn btn-primary" />
-        </div>
-    </form>
-    <h1>Index</h1>
+    </div>
 
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Create New</a>
-    </p>
+
 
     @foreach (var item in Model)
     {
         <div class="post-container">
             <div class="post-header">
+                @if (!string.IsNullOrEmpty(item.UserInfoDetails.ImageName))
+                {
+                    var fileExtension = System.IO.Path.GetExtension(item.UserInfoDetails.ImageName).ToLower();
+
+                    if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                    {
+                        // Displaying the Image
+                        <img src="@Url.Content("~/Images/" + item.UserInfoDetails.ImageName)" alt="User profile image" class="user-image" />
+
+                    }
+                    else if (fileExtension == ".pdf")
+                    {
+                        // Displaying the PDF
+                        <iframe src="@Url.Content("~/Images/" + item.UserInfoDetails.ImageName)" class="user-pdf"></iframe>
+
+                    }
+                    else
+                    {
+                        <p class="no-image-pdf">No image or PDF available.</p>
+
+                    }
+                }
+                else
+                {
+                    @:No image or PDF available.
+                }
                 @Html.DisplayFor(modelItem => item.UserInfoDetails.FullName)
             </div>
             @foreach (var p in item.UserPosts)
             {
                 <div class="post-content">
-                    <div class="post-title">@Html.DisplayFor(modelItem => p.Titel)</div>
                     <div class="post-body">@Html.DisplayFor(modelItem => p.Body)</div>
                     <div class="post-body">@Html.DisplayFor(modelItem => p.CreateAt)</div>
+                    @if (!string.IsNullOrEmpty(p.ImageName))
+                    {
+                        var fileExtension = System.IO.Path.GetExtension(p.ImageName).ToLower();
+
+                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                        {
+                            // Displaying the Image
+                            <img src="@Url.Content("~/Images/" + p.ImageName)" alt="@p.ImageName" class="post-image" />
+
+                        }
+                        else if (fileExtension == ".pdf")
+                        {
+                            // Displaying the PDF
+                            <iframe src="@Url.Content("~/Images/" + p.ImageName)" class="post-pdf"></iframe>
+
+                        }
+                        else
+                        {
+                            <div class="no-content">No image or PDF available.</div>
+
+                        }
+                    }
+                    else
+                    {
+                        @:No image or PDF available.
+                    }
                 </div>
                 <div class="comment-container">
-                    @foreach (var c in item.UserComments)
+                    @foreach (var c in item.UserComments.Take(2))
                     {
                         <div class="comment-content">
-                            <div><strong>UserId:</strong> @Html.DisplayFor(modelItem => c.UserId)</div>
-                            <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div>
-                            <div><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
+                            @*  <div><strong>UserId:</strong> @Html.DisplayFor(modelItem => c.UserId)</div>
+                <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div> *@
+                            <div class="comment-body"><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
+                            @if (!string.IsNullOrEmpty(c.ImageName))
+                            {
+                                var fileExtension = System.IO.Path.GetExtension(c.ImageName).ToLower();
+                                if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                                {
+                                    <img src="@Url.Content("~/Images/" + c.ImageName)" alt="Comment image" />
+                                }
+                                else if (fileExtension == ".pdf")
+                                {
+                                    <iframe src="@Url.Content("~/Images/" + c.ImageName)"></iframe>
+                                }
+                                else
+                                {
+                                    <div class="no-content">No image or PDF available.</div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="no-content">No image or PDF available.</div>
+                            }
                         </div>
+                        <!-- Add this inside your post loop, right after the comment-container div -->
 
-                        
                     }
-                    <form asp-controller="Comments" asp-action="CreateComment" method="post" enctype="multipart/form-data" >
+                    @if (item.UserComments.Count > 3)
+                    {
+                        <div class="more-comments" id="more-comments-@p.Id" style="display:none;">
+                            @foreach (var c in item.UserComments.Skip(2)) // Skip first 3 comments
+                            {
+                                <!-- Comment HTML for additional comments -->
+                                <div class="comment-content">
+                                    @*  <div><strong>UserId:</strong> @Html.DisplayFor(modelItem => c.UserId)</div>
+                    <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div> *@
+                                    <div class="comment-body"><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
+                                    @if (!string.IsNullOrEmpty(c.ImageName))
+                                    {
+                                        var fileExtension = System.IO.Path.GetExtension(c.ImageName).ToLower();
+                                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                                        {
+                                            <img src="@Url.Content("~/Images/" + c.ImageName)" alt="Comment image" />
+                                        }
+                                        else if (fileExtension == ".pdf")
+                                        {
+                                            <iframe src="@Url.Content("~/Images/" + c.ImageName)"></iframe>
+                                        }
+                                        else
+                                        {
+                                            <div class="no-content">No image or PDF available.</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <div class="no-content">No image or PDF available.</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <button onclick="toggleComments('@p.Id')" class="btn btn-primary show-more">Show More</button>
+                    }
+                    <!-- Comment submission form here -->
+
+                    <form asp-controller="Comments" asp-action="CreateComment" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="PostId" value="@p.Id" />
-                        <input  name="UserId" value="@p.UserId" />
+                        <input type="hidden" name="UserId" value="@p.UserId" />
                         <div class="form-group">
                             <label for="Body">Comment</label>
                             <textarea name="Body" class="form-control"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="UserId">User</label>
 
+                            <div class="mb-3">
+                                <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*">
+                                <span id="image-upload-name"></span>
+                            </div>
                         </div>
                         <button type="submit" class="btn btn-primary">Add Comment</button>
                     </form>
@@ -134,3 +220,35 @@
 </div>
 
 
+@section Scripts {
+    @{
+        <script>
+            document.getElementById('ImageFile').addEventListener('change', function () {
+                var fileName = this.files[0].name;
+                document.getElementById('image-upload-name').textContent = fileName;
+            });
+      
+            function toggleUserIdVisibility() {
+                var userIdDiv = document.getElementById('userIdDiv'); // Add an ID to your div for this
+                userIdDiv.classList.toggle('d-none');
+            }
+
+            function toggleComments(postId) {
+                var commentsContainer = document.getElementById('more-comments-' + postId);
+                var button = document.querySelector('button[onclick="toggleComments(\'' + postId + '\')"]');
+                if (commentsContainer.style.display === "none") {
+                    commentsContainer.style.display = "block";
+                    button.textContent = "Show Less";
+                } else {
+                    commentsContainer.style.display = "none";
+                    button.textContent = "Show More";
+                }
+            }
+
+        </script>
+
+
+
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
