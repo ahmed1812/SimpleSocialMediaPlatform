@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,21 +15,28 @@ using SimpleSocialMediaPlatform.Models;
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
+    [Authorize]
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly UserManager<IdentityUser> _userManager; // Use ApplicationUser if you have a custom user class
 
 
-        public PostsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public PostsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, UserManager<IdentityUser> userManager)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _userManager = userManager;
         }
 
         // GET: Posts
         public async Task<IActionResult> Index()
         {
+            var UserId = _userManager.GetUserId(User);
+            ViewData["UserID"] = UserId;
+            ViewData["UserID"] = _userManager.GetUserId(this.User);
+
             var userPerPost = await (from userInfo in _context.userInfos
                                      join post in _context.Posts on userInfo.UserId equals post.UserId
                                      orderby post.Id
@@ -37,12 +47,8 @@ namespace SimpleSocialMediaPlatform.Controllers
                                          UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
                                      }).ToListAsync();
 
-
-           
-
             return View(userPerPost);
         }
-
 
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)

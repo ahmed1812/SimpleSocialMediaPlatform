@@ -37,8 +37,9 @@
                             <textarea id="Body" name="Body" class="form-control" placeholder="What's on your mind?" rows="3"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="UserId" class="form-label">UserId</label>
-                            <input type="text" id="UserId" name="UserId" class="form-control">
+                           @*  <label for="UserId" class="form-label">UserId</label> *@
+                            <input type="hidden" id="UserId" name="UserId" value="@ViewData["UserID"]" class="form-control">
+                            @* <p>User Id : @ViewData["UserID"]</p> *@
                         </div>
 
                         <div class="mb-3">

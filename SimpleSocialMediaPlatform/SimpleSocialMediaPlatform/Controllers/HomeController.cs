@@ -1,20 +1,29 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using SimpleSocialMediaPlatform.Models;
 using System.Diagnostics;
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly UserManager<IdentityUser> _userManager; // Use ApplicationUser if you have a custom user class
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, UserManager<IdentityUser> userManager)
         {
             _logger = logger;
+            _userManager = userManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var userId = _userManager.GetUserId(User);
+            ViewData["UserID"] = userId;
+            ViewData["UserID"] = _userManager.GetUserId(this.User);
+
             return View();
         }
 
