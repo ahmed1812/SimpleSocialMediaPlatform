@@ -3,7 +3,108 @@
 @{
     ViewData["Title"] = "Create";
 }
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #F0F2F5;
+    color: #1C1E21;
+    margin: 0;
+    padding: 0;
+}
 
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.col-md-4 {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 15px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.control-label {
+    display: block;
+    margin-bottom: .5rem;
+    color: #606770;
+}
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.form-control:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 .2rem rgba(0,123,255,.25);
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1877F2;
+    border-color: #1877F2;
+    padding: .375rem .75rem;
+    border-radius: .25rem;
+    font-size: 1rem;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #166fe5;
+    border-color: #166fe5;
+}
+
+.text-danger {
+    color: #d9534f;
+}
+
+a {
+    color: #1877F2;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+hr {
+    border-top: 1px solid #ccc;
+}
+
+.avatar {
+    vertical-align: middle;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+
+
+</style>
+<div class="container">
 <h1>Create</h1>
 
 <h4>UserInfo</h4>
@@ -12,6 +113,8 @@
     <div class="col-md-4">
         <form asp-action="Create" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="row">
+                    <div class="col-md-6">
             <div class="form-group">
                 <label asp-for="FullName" class="control-label"></label>
                 <input asp-for="FullName" class="form-control" />
@@ -57,11 +160,7 @@
                 <input asp-for="ImageName" class="form-control" />
                 <span asp-validation-for="ImageName" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label for="ImageFile" class="control-label">Upload Image</label>
-                <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </div>
+            
             <div class="form-group">
                 <label asp-for="DOB" class="control-label"></label>
                 <input asp-for="DOB" class="form-control" />
@@ -72,9 +171,24 @@
                 <input asp-for="CreateAt" class="form-control" />
                 <span asp-validation-for="CreateAt" class="text-danger"></span>
             </div>
+                        <div class="form-group">
+                            <label for="ImageFile" class="control-label">Upload Image</label>
+                            <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*" />
+                            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                        </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
+            </div>
+          @* 
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="ImageFile" class="control-label">Upload Image</label>
+                        <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*" />
+                        <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                    </div>
+                </div> *@
+                </div>
         </form>
     </div>
 </div>
@@ -82,7 +196,7 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
+</div>
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

@@ -15,15 +15,15 @@ using SimpleSocialMediaPlatform.Models;
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
-    [Authorize]
+    //[Authorize]
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly UserManager<IdentityUser> _userManager; // Use ApplicationUser if you have a custom user class
+        private readonly UserManager<ApplicationUser> _userManager; // Use ApplicationUser if you have a custom user class
 
 
-        public PostsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, UserManager<IdentityUser> userManager)
+        public PostsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
