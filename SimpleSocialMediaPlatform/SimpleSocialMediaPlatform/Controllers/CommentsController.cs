@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -16,17 +20,23 @@ namespace SimpleSocialMediaPlatform.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<LoginModel> _logger;
 
-        public CommentsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public CommentsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager, ILogger<LoginModel> logger)
         {
-            _context = context;
-            _webHostEnvironment = webHostEnvironment;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
+            _webHostEnvironment = webHostEnvironment ?? throw new ArgumentNullException(nameof(webHostEnvironment));
+            _userManager = userManager;
+            _logger = logger;
         }
+
 
         // GET: Comments
         public async Task<IActionResult> Index()
         {
-              return _context.Comments != null ? 
+
+            return _context.Comments != null ?
                           View(await _context.Comments.ToListAsync()) :
                           Problem("Entity set 'ApplicationDbContext.Comments'  is null.");
         }
@@ -52,21 +62,30 @@ namespace SimpleSocialMediaPlatform.Controllers
         // GET: Comments/Create
         public IActionResult Create()
         {
-            ViewBag.Users = _context.userInfos.ToList(); 
-            ViewBag.Posts = _context.Posts.ToList();
+            if (!User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Login", "Account");  // Redirect to login if not authenticated
+            }
+
+            var userId = _userManager.GetUserId(User);
+            ViewData["UserID"] = userId;
+
+            
+
             return View();
         }
+
+
 
         // POST: Comments/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create( Comments comments)
+        public async Task<IActionResult> Create(Comments comments)
         {
             comments.CreateAt = DateTime.Now;
-            if (ModelState.IsValid)
-            {
+            
                 try
                 {
                     if (comments.ImageFile != null && comments.ImageFile.Length > 0)
@@ -110,68 +129,49 @@ namespace SimpleSocialMediaPlatform.Controllers
                     // Log the exception or handle it appropriately
                     ModelState.AddModelError("", "An error occurred while saving the image.");
                 }
-            }
+            
             return View(comments);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateComment(Comments comments)
+        public async Task<IActionResult> CreateCommentForPost(Comments comments)
         {
-            comments.CreateAt = DateTime.Now;
-            if (ModelState.IsValid)
+            comments.CreateAt = DateTime.Now;  // Set the creation time to now
+
+            try
             {
-                // Check if an image file was uploaded
                 if (comments.ImageFile != null && comments.ImageFile.Length > 0)
                 {
-                    try
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(comments.ImageFile.FileName);
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    if (!Directory.Exists(uploadsFolder))
                     {
-                        // Constructing a server-relative path
-                        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(comments.ImageFile.FileName);
-                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                        // Ensuring the directory exists
-                        if (!Directory.Exists(uploadsFolder))
-                        {
-                            Directory.CreateDirectory(uploadsFolder);
-                        }
-
-                        // Saving the file
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await comments.ImageFile.CopyToAsync(fileStream);
-                        }
-
-                        // Update your model with the image information
-                        comments.ImageName = uniqueFileName;
-                        comments.ImageUrl = "/Images/" + uniqueFileName;
+                        Directory.CreateDirectory(uploadsFolder);
                     }
-                    catch (Exception ex)
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
-                        // Log the exception or handle it appropriately
-                        // Consider using a logging framework or service
-                        ModelState.AddModelError("", "An error occurred while saving the image. Please try again.");
-                        // Return to the view with the current model to display the error
-                        return View(comments);
+                        await comments.ImageFile.CopyToAsync(fileStream);
                     }
-                }
-                else
-                {
-                    // Optionally handle the case where no image is uploaded if necessary
-                    // For example, you could set a default image or leave the image fields blank
+                    comments.ImageName = uniqueFileName;
+                    comments.ImageUrl = "/Images/" + uniqueFileName;
                 }
 
-                // Add the comment to the database
+                // Add the comment to the database context and save changes
                 _context.Add(comments);
                 await _context.SaveChangesAsync();
-                //return RedirectToAction(nameof(Index));
-                return RedirectToAction("Index", "Posts");
-            }
+                return Json(new { success = true, message = "Comment added successfully!", commentBody = comments.Body });
 
-            // If we got this far, something failed; redisplay the form
-            return View(comments);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error adding comment.");
+                return Json(new { success = false, message = "An error occurred while saving the comment." });
+            }
         }
+
+
 
 
         // GET: Comments/Edit/5

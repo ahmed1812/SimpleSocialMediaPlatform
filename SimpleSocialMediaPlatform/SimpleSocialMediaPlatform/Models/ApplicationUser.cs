@@ -19,6 +19,8 @@ namespace SimpleSocialMediaPlatform.Models
         public byte[]? ProfilePicture { get; set; }
         public DateTime DOB { get; set; }
         public DateTime CreateAt { get; set; }
-      
+        public  ICollection<Post> Posts { get; set; } = new List<Post>();
+        public  ICollection<Comments> Comments { get; set; } = new List<Comments>();
+
     }
 }

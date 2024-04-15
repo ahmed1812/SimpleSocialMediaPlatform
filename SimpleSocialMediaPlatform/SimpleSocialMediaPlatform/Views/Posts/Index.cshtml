@@ -11,6 +11,28 @@
         font-style: italic;
     }
 
+    .user-profile-pic {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+    .comment-image, .comment-pdf {
+        max-width: 100%;
+        height: auto;
+        margin-top: 10px;
+    }
+
+    .user-comment-info {
+        display: flex;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .comment-detail {
+        flex: 1;
+    }
 
 
 </style>
@@ -44,8 +66,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="ImageFile" class="form-label btn btn-light">Upload Image</label>
-                            <input type="file" id="ImageFile" name="ImageFile" class="form-control d-none" accept="image/*">
+                            @* <label for="ImageFile" class="form-label btn btn-light">Upload Image</label> *@
+                            <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*">
                             <span id="image-upload-name"></span>
                         </div>
                        
@@ -68,39 +90,23 @@
     {
         <div class="post-container">
             <div class="post-header">
-                @if (!string.IsNullOrEmpty(item.UserInfoDetails.ImageName))
+                @if (!string.IsNullOrEmpty(ViewData["ProfilePictureBase64"] as string))
                 {
-                    var fileExtension = System.IO.Path.GetExtension(item.UserInfoDetails.ImageName).ToLower();
-
-                    if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
-                    {
-                        // Displaying the Image
-                        <img src="@Url.Content("~/Images/" + item.UserInfoDetails.ImageName)" alt="User profile image" class="user-image" />
-
-                    }
-                    else if (fileExtension == ".pdf")
-                    {
-                        // Displaying the PDF
-                        <iframe src="@Url.Content("~/Images/" + item.UserInfoDetails.ImageName)" class="user-pdf"></iframe>
-
-                    }
-                    else
-                    {
-                        <p class="no-image-pdf">No image or PDF available.</p>
-
-                    }
+                    var imageSrc = $"data:image/*;base64,{ViewData["ProfilePictureBase64"]}";
+                    <img class="avatar rounded-circle" alt="profile" src="@imageSrc" />
                 }
                 else
                 {
-                    @:No image or PDF available.
+                    <p>No profile image available.</p>
                 }
+
                 @Html.DisplayFor(modelItem => item.UserInfoDetails.FullName)
             </div>
             @foreach (var p in item.UserPosts)
             {
                 <div class="post-content">
                     <div class="post-body">@Html.DisplayFor(modelItem => p.Body)</div>
-                    <div class="post-body">@Html.DisplayFor(modelItem => p.CreateAt)</div>
+                    <div class="post-time">@GetTimeAgo(p.CreateAt)</div>
                     @if (!string.IsNullOrEmpty(p.ImageName))
                     {
                         var fileExtension = System.IO.Path.GetExtension(p.ImageName).ToLower();
@@ -128,23 +134,39 @@
                         @:No image or PDF available.
                     }
                 </div>
-                <div class="comment-container">
+                <div class="comment-container" id="commentsList">
                     @foreach (var c in item.UserComments.Take(2))
                     {
                         <div class="comment-content">
-                            @*  <div><strong>UserId:</strong> @Html.DisplayFor(modelItem => c.UserId)</div>
-                <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div> *@
-                            <div class="comment-body"><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
+                            <!-- User profile picture and comment -->
+                            <div class="user-comment-info">
+                                @if (!string.IsNullOrEmpty(@Convert.ToBase64String(c.User.ProfilePicture)))
+                                {
+                                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(c.User.ProfilePicture)" alt="User profile picture" />
+
+                                }
+                                else
+                                {
+                                    <!-- Display a default image if no profile picture is available -->
+                                    <img src="@Url.Content("~/Images/default-profile-pic.png")" alt="Default profile picture" class="user-profile-pic" />
+                                }
+                                <div class="comment-detail">
+                                    <strong>@Html.DisplayFor(modelItem => c.User.FullName):</strong>
+                                    <div class="comment-body">@Html.DisplayFor(modelItem => c.Body)</div>
+                                </div>
+                            </div>
+
+                            <!-- Display comment images or PDFs -->
                             @if (!string.IsNullOrEmpty(c.ImageName))
                             {
                                 var fileExtension = System.IO.Path.GetExtension(c.ImageName).ToLower();
                                 if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
                                 {
-                                    <img src="@Url.Content("~/Images/" + c.ImageName)" alt="Comment image" />
+                                    <img src="@Url.Content("~/Images/" + c.ImageName)" alt="Comment image" class="comment-image" />
                                 }
                                 else if (fileExtension == ".pdf")
                                 {
-                                    <iframe src="@Url.Content("~/Images/" + c.ImageName)"></iframe>
+                                    <iframe src="@Url.Content("~/Images/" + c.ImageName)" class="comment-pdf"></iframe>
                                 }
                                 else
                                 {
@@ -156,29 +178,42 @@
                                 <div class="no-content">No image or PDF available.</div>
                             }
                         </div>
-                        <!-- Add this inside your post loop, right after the comment-container div -->
-
                     }
                     @if (item.UserComments.Count > 3)
                     {
                         <div class="more-comments" id="more-comments-@p.Id" style="display:none;">
-                            @foreach (var c in item.UserComments.Skip(2)) // Skip first 3 comments
+                            @foreach (var c in item.UserComments.Skip(2))
                             {
-                                <!-- Comment HTML for additional comments -->
                                 <div class="comment-content">
-                                    @*  <div><strong>UserId:</strong> @Html.DisplayFor(modelItem => c.UserId)</div>
-                    <div><strong>PostId:</strong> @Html.DisplayFor(modelItem => c.PostId)</div> *@
-                                    <div class="comment-body"><strong>Comment:</strong> @Html.DisplayFor(modelItem => c.Body)</div>
+                                    <!-- Similar structure for additional comments -->
+                                    <div class="user-comment-info">
+                                        @if (!string.IsNullOrEmpty(@Convert.ToBase64String(c.User.ProfilePicture)))
+                                        {
+                                            <img src="data:image/jpeg;base64,@Convert.ToBase64String(c.User.ProfilePicture)" alt="User profile picture" />
+
+                                        }
+                                        else
+                                        {
+                                            <!-- Display a default image if no profile picture is available -->
+                                            <img src="@Url.Content("~/Images/default-profile-pic.png")" alt="Default profile picture" class="user-profile-pic" />
+                                        }
+                                        <div class="comment-detail">
+                                            <strong>@Html.DisplayFor(modelItem => c.User.FullName):</strong>
+                                            <div class="comment-body">@Html.DisplayFor(modelItem => c.Body)</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Display comment images or PDFs -->
                                     @if (!string.IsNullOrEmpty(c.ImageName))
                                     {
                                         var fileExtension = System.IO.Path.GetExtension(c.ImageName).ToLower();
                                         if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
                                         {
-                                            <img src="@Url.Content("~/Images/" + c.ImageName)" alt="Comment image" />
+                                            <img src="@Url.Content("~/Images/" + c.ImageName)" alt="Comment image" class="comment-image" />
                                         }
                                         else if (fileExtension == ".pdf")
                                         {
-                                            <iframe src="@Url.Content("~/Images/" + c.ImageName)"></iframe>
+                                            <iframe src="@Url.Content("~/Images/" + c.ImageName)" class="comment-pdf"></iframe>
                                         }
                                         else
                                         {
@@ -189,14 +224,31 @@
                                     {
                                         <div class="no-content">No image or PDF available.</div>
                                     }
+                                
                                 </div>
                             }
                         </div>
                         <button onclick="toggleComments('@p.Id')" class="btn btn-primary show-more">Show More</button>
                     }
-                    <!-- Comment submission form here -->
 
-                    <form asp-controller="Comments" asp-action="CreateComment" method="post" enctype="multipart/form-data">
+                    <!-- Comment submission form -->
+                   @*  <form asp-controller="Comments" asp-action="CreateCommentForPost" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="PostId" value="@p.Id" />
+                        <input type="hidden" name="UserId" value="@p.UserId" />
+                        <div class="form-group">
+                            <label for="Body">Comment</label>
+                            <textarea name="Body" class="form-control"></textarea>
+
+                            <div class="mb-3">
+                                <input type="file" id="ImageFile" name="ImageFile" class="form-control" accept="image/*">
+                                <span id="image-upload-name"></span>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Comment</button>
+                    </form> *@
+               
+
+                    <form id="commentForm" asp-controller="Comments" asp-action="CreateCommentForPost" method="post" enctype="multipart/form-data">
                         <input type="hidden" name="PostId" value="@p.Id" />
                         <input type="hidden" name="UserId" value="@p.UserId" />
                         <div class="form-group">
@@ -211,7 +263,10 @@
                         <button type="submit" class="btn btn-primary">Add Comment</button>
                     </form>
 
+
+
                 </div>
+
                 <div class="post-actions">
                     <a asp-action="Edit" asp-route-id="@p.Id" class="action-link">Edit</a>
                     <a asp-action="Delete" asp-route-id="@p.Id" class="action-link">Delete</a>
@@ -225,6 +280,41 @@
 @section Scripts {
     @{
         <script>
+            $(document).ready(function () {
+                $('#commentForm').submit(function (event) {
+                    event.preventDefault();
+                    var formData = new FormData(this);
+
+                    console.log(formData); // Useful for debugging to see what's being sent
+
+                    $.ajax({
+                        url: this.action,
+                        type: this.method,
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            if (response.success) {
+                                alert(response.message); // Notify the user of success
+                                // Append the new comment to the list
+                                $('#commentsList').append('<div><strong>New Comment:</strong> ' + response.commentBody + '</div>');
+                                // Clear the form fields
+                                $('#commentForm')[0].reset();
+                            } else {
+                                alert(response.message); // Display error message from server
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            alert('AJAX error: ' + error); // More detailed error
+                        }
+                    });
+                });
+            });
+        </script>
+
+
+        <script>
+           
             document.getElementById('ImageFile').addEventListener('change', function () {
                 var fileName = this.files[0].name;
                 document.getElementById('image-upload-name').textContent = fileName;
@@ -246,6 +336,40 @@
                     button.textContent = "Show More";
                 }
             }
+
+            @functions {
+            public string GetTimeAgo(DateTime dateTime)
+            {
+                var timeSpan = DateTime.Now.Subtract(dateTime);
+
+                if (timeSpan <= TimeSpan.FromSeconds(60))
+                {
+                    return $"{timeSpan.Seconds} seconds ago";
+                }
+                else if (timeSpan <= TimeSpan.FromMinutes(60))
+                {
+                    return timeSpan.Minutes > 1 ? $"{timeSpan.Minutes} minutes ago" : "a minute ago";
+                }
+                else if (timeSpan <= TimeSpan.FromHours(24))
+                {
+                    return timeSpan.Hours > 1 ? $"{timeSpan.Hours} hours ago" : "an hour ago";
+                }
+                else if (timeSpan <= TimeSpan.FromDays(30))
+                {
+                    return timeSpan.Days > 1 ? $"{timeSpan.Days} days ago" : "yesterday";
+                }
+                else if (timeSpan <= TimeSpan.FromDays(365))
+                {
+                    int months = (int)(timeSpan.Days / 30);
+                    return months > 1 ? $"{months} months ago" : "a month ago";
+                }
+                else
+                {
+                    int years = (int)(timeSpan.Days / 365);
+                    return years > 1 ? $"{years} years ago" : "a year ago";
+                }
+            }
+        }
 
         </script>
 

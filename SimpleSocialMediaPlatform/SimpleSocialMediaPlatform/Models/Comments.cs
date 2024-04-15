@@ -18,5 +18,7 @@ namespace SimpleSocialMediaPlatform.Models
         [NotMapped]
         [DisplayName("Upload File")]
         public IFormFile? ImageFile { get; set; }
+        [ForeignKey("UserId")]
+        public  ApplicationUser User { get; set; } // Navigation property
     }
 }

@@ -4,6 +4,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -16,11 +17,14 @@ namespace SimpleSocialMediaPlatform.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly UserManager<ApplicationUser> _userManager; // Use ApplicationUser if you have a custom user class
 
-        public UserInfoesController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+
+        public UserInfoesController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _webHostEnvironment = webHostEnvironment;
+            _userManager = userManager;
         }
 
         // GET: UserInfoes
@@ -62,6 +66,9 @@ namespace SimpleSocialMediaPlatform.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserInfo userInfo)
         {
+            var UserId = _userManager.GetUserId(User);
+            ViewData["UserID"] = UserId;
+            ViewData["UserID"] = _userManager.GetUserId(this.User);
             if (ModelState.IsValid)
             {
                 try

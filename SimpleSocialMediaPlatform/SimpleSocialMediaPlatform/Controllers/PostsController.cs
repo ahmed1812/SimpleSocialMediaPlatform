@@ -15,7 +15,7 @@ using SimpleSocialMediaPlatform.Models;
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -36,16 +36,68 @@ namespace SimpleSocialMediaPlatform.Controllers
             var UserId = _userManager.GetUserId(User);
             ViewData["UserID"] = UserId;
             ViewData["UserID"] = _userManager.GetUserId(this.User);
+            var userId = _userManager.GetUserId(User); // Get the current user's ID
+            var userP = await _userManager.FindByIdAsync(userId); // Find the user
 
-            var userPerPost = await (from userInfo in _context.userInfos
-                                     join post in _context.Posts on userInfo.UserId equals post.UserId
-                                     orderby post.Id
+            // Assuming the profile picture is stored as a byte array in the user entity
+            var profilePictureBase64 = userP.ProfilePicture != null ? Convert.ToBase64String(userP.ProfilePicture) : string.Empty;
+
+            // Pass the profile picture to the view using ViewData (you could also add it to your model)
+            ViewData["ProfilePictureBase64"] = profilePictureBase64;
+
+            ApplicationUser userA = await _userManager.GetUserAsync(User);
+
+            if (userA != null)
+            {
+                // Assuming you want the username
+                ViewData["UserName"] = userA.UserName;
+
+                // If you have a full name property and prefer to use it if available
+                ViewData["UserFullName"] = string.IsNullOrWhiteSpace(userA.FullName) ? userA.UserName : userA.FullName;
+            }
+            else
+            {
+                ViewData["UserName"] = "Guest";
+                ViewData["UserFullName"] = "Guest";
+            }
+            //var userPerPost = await (from userInfo in _context.userInfos
+            //                         join post in _context.Posts on userInfo.UserId equals post.UserId
+            //                         orderby post.Id
+            //                         select new UserPostCommentViewModel
+            //                         {
+            //                             UserInfoDetails = userInfo,
+            //                             UserPosts = new List<Post> { post },
+            //                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
+            //                         }).ToListAsync();
+
+            //var userPerPost = await (from user in _context.Users
+            //                         join post in _context.Posts on user.Id equals post.UserId
+            //                         orderby post.CreateAt descending // Here's the key change for ordering
+            //                         select new UserPostCommentViewModel
+            //                         {
+            //                             UserInfoDetails = new UserInfo
+            //                             {
+            //                                 UserId = user.Id,
+            //                                 FullName = user.UserName,
+            //                             },
+            //                             UserPosts = new List<Post> { post },
+            //                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
+            //                         }).ToListAsync();
+
+            var userPerPost = await (from user in _context.Users
+                                     join post in _context.Posts on user.Id equals post.UserId
+                                     orderby post.CreateAt descending
                                      select new UserPostCommentViewModel
                                      {
-                                         UserInfoDetails = userInfo,
+                                         UserInfoDetails = new UserInfo
+                                         {
+                                             UserId = user.Id,
+                                             FullName = user.UserName,
+                                         },
                                          UserPosts = new List<Post> { post },
-                                         UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
+                                         UserComments = _context.Comments.Include(c => c.User).Where(comment => comment.PostId == post.Id).ToList(),
                                      }).ToListAsync();
+
 
             return View(userPerPost);
         }
@@ -85,50 +137,44 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 // Setting the date here
                 post.CreateAt = DateTime.Now;
-                try
+                if (post.ImageFile != null && post.ImageFile.Length > 0)
                 {
-                    if (post.ImageFile != null && post.ImageFile.Length > 0)
+                    try
                     {
                         // Constructing a server-relative path
                         string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
-
                         // Ensure a unique file name
                         string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.ImageFile.FileName);
-
                         string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
                         // Ensuring the directory exists
                         if (!Directory.Exists(uploadsFolder))
                         {
                             Directory.CreateDirectory(uploadsFolder);
                         }
-
                         // Saving the file
                         using (var fileStream = new FileStream(filePath, FileMode.Create))
                         {
                             await post.ImageFile.CopyToAsync(fileStream);
                         }
-
                         // Update your model as necessary
                         post.ImageName = uniqueFileName;
                         post.ImageUrl = "/Images/" + uniqueFileName; // Relative path
-
-                        _context.Add(post);
-                        await _context.SaveChangesAsync();
-                        return RedirectToAction(nameof(Index));
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        // Handle the case when no image is uploaded
-                        ModelState.AddModelError("ImageFile", "Please upload an image file.");
+                        // Log the exception or handle it appropriately
+                        ModelState.AddModelError("", "An error occurred while saving the image.");
+                        return View(post); // Return the view with an error message if image save fails
                     }
                 }
-                catch (Exception ex)
-                {
-                    // Log the exception or handle it appropriately
-                    ModelState.AddModelError("", "An error occurred while saving the image.");
-                }
+                // No else clause needed here. If no image is provided, just continue without setting the image properties.
+
+                _context.Add(post);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
             }
+
+            // If we get here, it means something was invalid in the ModelState or image saving failed
             return View(post);
         }
 
@@ -247,20 +293,36 @@ namespace SimpleSocialMediaPlatform.Controllers
         {
             if (_context.Posts == null)
             {
-                return Problem("Entity set 'ApplicationDbContext.Posts'  is null.");
+                return Problem("Entity set 'ApplicationDbContext.Posts' is null.");
             }
             var post = await _context.Posts.FindAsync(id);
-            if (post != null)
+            if (post == null)
             {
-                _context.Posts.Remove(post);
+                return NotFound();
             }
-            string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", post.ImageName);
-            //string uniqueFileName = imageClass.ImageFile.FileName;
-            //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-            if (System.IO.File.Exists(imagePath))
-                System.IO.File.Delete(imagePath);
-            
-            await _context.SaveChangesAsync();
+
+            // If you intend to delete the post only if it does NOT have an associated image
+            // Check if the ImageName is null or empty and then decide to delete or not
+            if (string.IsNullOrEmpty(post.ImageName))
+            {
+                // If no image is associated, then delete the post
+                _context.Posts.Remove(post);
+                await _context.SaveChangesAsync();
+                // Optionally, add logic here if you want to redirect to a different action 
+                // when a post without an image is deleted
+            }
+            else
+            {
+                // If an image is associated, delete both the post and its image from the filesystem
+                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", post.ImageName);
+                if (System.IO.File.Exists(imagePath))
+                {
+                    System.IO.File.Delete(imagePath);
+                }
+                _context.Posts.Remove(post);
+                await _context.SaveChangesAsync();
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

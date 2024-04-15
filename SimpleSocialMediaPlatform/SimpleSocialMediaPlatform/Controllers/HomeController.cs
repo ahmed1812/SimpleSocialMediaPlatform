@@ -24,6 +24,21 @@ namespace SimpleSocialMediaPlatform.Controllers
             ViewData["UserID"] = userId;
             ViewData["UserID"] = _userManager.GetUserId(this.User);
 
+            ApplicationUser user = await _userManager.GetUserAsync(User);
+            if (user != null)
+            {
+                // Assuming you want the username
+                ViewData["UserName"] = user.UserName;
+
+                // If you have a full name property and prefer to use it if available
+                ViewData["UserFullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
+            }
+            else
+            {
+                ViewData["UserName"] = "Guest";
+                ViewData["UserFullName"] = "Guest";
+            }
+
             return View();
         }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SimpleSocialMediaPlatform.Data;
 
@@ -11,9 +12,10 @@ using SimpleSocialMediaPlatform.Data;
 namespace SimpleSocialMediaPlatform.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240412011324_NotMappedUserTest")]
+    partial class NotMappedUserTest
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -258,6 +260,9 @@ namespace SimpleSocialMediaPlatform.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<string>("Body")
                         .HasColumnType("nvarchar(max)");
 
@@ -275,11 +280,11 @@ namespace SimpleSocialMediaPlatform.Data.Migrations
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ApplicationUserId");
 
                     b.ToTable("Comments");
                 });
@@ -430,13 +435,9 @@ namespace SimpleSocialMediaPlatform.Data.Migrations
 
             modelBuilder.Entity("SimpleSocialMediaPlatform.Models.Comments", b =>
                 {
-                    b.HasOne("SimpleSocialMediaPlatform.Models.ApplicationUser", "User")
+                    b.HasOne("SimpleSocialMediaPlatform.Models.ApplicationUser", null)
                         .WithMany("Comments")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
+                        .HasForeignKey("ApplicationUserId");
                 });
 
             modelBuilder.Entity("SimpleSocialMediaPlatform.Models.Post", b =>
