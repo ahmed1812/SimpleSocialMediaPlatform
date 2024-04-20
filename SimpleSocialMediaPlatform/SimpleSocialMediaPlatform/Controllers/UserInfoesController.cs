@@ -96,7 +96,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                         }
 
                         // Update your model as necessary
-                        userInfo.ImageName = uniqueFileName;
+                        userInfo.UserPostImage = uniqueFileName;
                         userInfo.ImageUrl = "/Images/" + uniqueFileName; // Relative path
 
                         _context.Add(userInfo);
@@ -169,9 +169,9 @@ namespace SimpleSocialMediaPlatform.Controllers
                         }
 
                         // Delete the old file if it exists and is different
-                        if (!string.IsNullOrEmpty(existingUser.ImageName) && existingUser.ImageName != uniqueFileName)
+                        if (!string.IsNullOrEmpty(existingUser.UserPostImage) && existingUser.UserPostImage != uniqueFileName)
                         {
-                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.ImageName);
+                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.UserPostImage);
                             if (System.IO.File.Exists(oldFilePath))
                             {
                                 System.IO.File.Delete(oldFilePath);
@@ -179,13 +179,13 @@ namespace SimpleSocialMediaPlatform.Controllers
                         }
 
                         // Update the database entry
-                        userInfo.ImageName = uniqueFileName;
+                        userInfo.UserPostImage = uniqueFileName;
                         userInfo.ImageUrl = "/Images/" + uniqueFileName; // Update to store relative path
                     }
                     else
                     {
                         // Keep the old image if no new image was uploaded
-                        userInfo.ImageName = existingUser.ImageName;
+                        userInfo.UserPostImage = existingUser.UserPostImage;
                         userInfo.ImageUrl = existingUser.ImageUrl;
                     }
 
@@ -242,7 +242,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                 _context.userInfos.Remove(userInfo);
             }
 
-            string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", userInfo.ImageName);
+            string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", userInfo.UserPostImage);
             //string uniqueFileName = imageClass.ImageFile.FileName;
             //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
             if (System.IO.File.Exists(imagePath))

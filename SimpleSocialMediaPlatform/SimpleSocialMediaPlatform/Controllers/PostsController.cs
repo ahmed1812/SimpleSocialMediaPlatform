@@ -84,6 +84,36 @@ namespace SimpleSocialMediaPlatform.Controllers
             //                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
             //                         }).ToListAsync();
 
+            //var userPerPost = await (from user in _context.Users
+            //                         join post in _context.Posts on user.Id equals post.UserId
+            //                         orderby post.CreateAt descending
+            //                         select new UserPostCommentViewModel
+            //                         {
+            //                             UserInfoDetails = new UserInfo
+            //                             {
+            //                                 UserId = user.Id,
+            //                                 FullName = user.UserName,
+            //                             },
+            //                             UserPosts = new List<Post> { post },
+            //                             UserComments = _context.Comments.Include(c => c.User).Where(comment => comment.PostId == post.Id).ToList(),
+            //                         }).ToListAsync();
+
+            //var userPerPost = await (from user in _context.Users
+            //             join post in _context.Posts on user.Id equals post.UserId
+            //             orderby post.CreateAt descending
+            //             select new UserPostCommentViewModel
+            //             {
+            //                 UserInfoDetails = new UserInfo
+            //                 {
+            //                     UserId = user.Id,
+            //                     FullName = user.UserName, // Assuming UserName is what you meant by FullName
+            //                     ImageName = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty
+            //                 },
+            //                 UserPosts = new List<Post> { post },
+            //                 UserComments = _context.Comments.Include(c => c.User).Where(comment => comment.PostId == post.Id).ToList(),
+            //                 AppUsers = user
+            //             }).ToListAsync();
+
             var userPerPost = await (from user in _context.Users
                                      join post in _context.Posts on user.Id equals post.UserId
                                      orderby post.CreateAt descending
@@ -93,14 +123,29 @@ namespace SimpleSocialMediaPlatform.Controllers
                                          {
                                              UserId = user.Id,
                                              FullName = user.UserName,
+                                             UserPostImage = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty
                                          },
                                          UserPosts = new List<Post> { post },
-                                         UserComments = _context.Comments.Include(c => c.User).Where(comment => comment.PostId == post.Id).ToList(),
+                                         UserComments = _context.Comments
+                                             .Include(c => c.User)
+                                             .Where(comment => comment.PostId == post.Id)
+                                             .Select(c => new Comments
+                                             {
+                                                 Body = c.Body,
+                                                 UserName = c.User.UserName,
+                                                 UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty
+                                             }).ToList(),
+                                         AppUsers = user
                                      }).ToListAsync();
+
+
 
 
             return View(userPerPost);
         }
+
+
+
 
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -228,9 +273,9 @@ namespace SimpleSocialMediaPlatform.Controllers
                         }
 
                         // Delete the old file if it exists and is different
-                        if (!string.IsNullOrEmpty(existingUser.ImageName) && existingUser.ImageName != uniqueFileName)
+                        if (!string.IsNullOrEmpty(existingUser.UserPostImage) && existingUser.UserPostImage != uniqueFileName)
                         {
-                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.ImageName);
+                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.UserPostImage);
                             if (System.IO.File.Exists(oldFilePath))
                             {
                                 System.IO.File.Delete(oldFilePath);
@@ -244,7 +289,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                     else
                     {
                         // Keep the old image if no new image was uploaded
-                        post.ImageName = existingUser.ImageName;
+                        post.ImageName = existingUser.UserPostImage;
                         post.ImageUrl = existingUser.ImageUrl;
                     }
 

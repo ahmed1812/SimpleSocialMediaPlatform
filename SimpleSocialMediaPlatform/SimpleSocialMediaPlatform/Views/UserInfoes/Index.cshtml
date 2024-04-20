@@ -43,19 +43,19 @@
                     <td>@Html.DisplayFor(modelItem => item.State)</td>
                     <td>@Html.DisplayFor(modelItem => item.ZipCode)</td>
                     <td>
-                        @if (!string.IsNullOrEmpty(item.ImageName))
+                        @if (!string.IsNullOrEmpty(item.UserPostImage))
                         {
-                            var fileExtension = System.IO.Path.GetExtension(item.ImageName).ToLower();
+                            var fileExtension = System.IO.Path.GetExtension(item.UserPostImage).ToLower();
 
                             if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
                             {
                                 // Displaying the Image
-                                <img src="@Url.Content("~/Images/" + item.ImageName)" alt="@item.ImageName" />
+                                <img src="@Url.Content("~/Images/" + item.UserPostImage)" alt="@item.UserPostImage" />
                             }
                             else if (fileExtension == ".pdf")
                             {
                                 // Displaying the PDF
-                                <iframe src="@Url.Content("~/Images/" + item.ImageName)"></iframe>
+                                <iframe src="@Url.Content("~/Images/" + item.UserPostImage)"></iframe>
                             }
                             else
                             {

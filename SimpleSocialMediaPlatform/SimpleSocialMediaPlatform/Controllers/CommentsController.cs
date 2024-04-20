@@ -137,7 +137,7 @@ namespace SimpleSocialMediaPlatform.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateCommentForPost(Comments comments)
         {
-            comments.CreateAt = DateTime.Now;  // Set the creation time to now
+            comments.CreateAt = DateTime.Now; // Set the creation time to now
 
             try
             {
@@ -161,15 +161,29 @@ namespace SimpleSocialMediaPlatform.Controllers
                 // Add the comment to the database context and save changes
                 _context.Add(comments);
                 await _context.SaveChangesAsync();
-                return Json(new { success = true, message = "Comment added successfully!", commentBody = comments.Body });
 
+                // Retrieve user's full name using the UserId
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == comments.UserId);
+                var userFullName = user?.FullName ?? "Anonymous";
+
+                return Json(new { success = true, message = "Comment added successfully!", commentBody = comments.Body, userName = userFullName });
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error adding comment.");
                 return Json(new { success = false, message = "An error occurred while saving the comment." });
+                //return Json(new
+                //{
+                //    success = true,
+                //    message = "Comment added successfully!",
+                //    commentBody = comments.Body,
+                //    userName = comments.User.FullName,
+                //    imageUrl = comments.ImageUrl // Ensure this is included
+                //});
+
             }
         }
+
 
 
 

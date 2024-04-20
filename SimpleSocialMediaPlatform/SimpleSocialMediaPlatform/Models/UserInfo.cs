@@ -16,7 +16,7 @@ namespace SimpleSocialMediaPlatform.Models
         public string City { get; set; }
         public string State { get; set; }
         public string ZipCode { get; set; }
-        public string? ImageName { get; set; }
+        public string? UserPostImage { get; set; }
         public string? ImageUrl { get; set; }
         [NotMapped]
         [DisplayName("Upload File")]

@@ -20,5 +20,7 @@ namespace SimpleSocialMediaPlatform.Models
         public IFormFile? ImageFile { get; set; }
         [ForeignKey("UserId")]
         public  ApplicationUser User { get; set; } // Navigation property
+        public string? UserName { get;  set; }
+        public string? UserProfilePicture { get;  set; }
     }
 }

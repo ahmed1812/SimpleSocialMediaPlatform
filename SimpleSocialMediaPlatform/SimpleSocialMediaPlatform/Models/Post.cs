@@ -15,6 +15,8 @@ namespace SimpleSocialMediaPlatform.Models
         public string? UserId { get; set; }
         [NotMapped]
         public UserInfo? PostUserInfo { get; set; } // This is used for RunTime ONLY
+        [NotMapped]
+        public ApplicationUser? AppUserInfo { get; set; } // This is used for RunTime ONLY
 
         public string? ImageName { get; set; }
         public string? ImageUrl { get; set; }
@@ -22,5 +24,6 @@ namespace SimpleSocialMediaPlatform.Models
         [DisplayName("Upload File")]
         public IFormFile? ImageFile { get; set; }
        
+
     }
 }
