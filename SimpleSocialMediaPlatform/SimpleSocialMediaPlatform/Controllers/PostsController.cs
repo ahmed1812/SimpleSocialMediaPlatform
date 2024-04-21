@@ -60,59 +60,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                 ViewData["UserName"] = "Guest";
                 ViewData["UserFullName"] = "Guest";
             }
-            //var userPerPost = await (from userInfo in _context.userInfos
-            //                         join post in _context.Posts on userInfo.UserId equals post.UserId
-            //                         orderby post.Id
-            //                         select new UserPostCommentViewModel
-            //                         {
-            //                             UserInfoDetails = userInfo,
-            //                             UserPosts = new List<Post> { post },
-            //                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
-            //                         }).ToListAsync();
 
-            //var userPerPost = await (from user in _context.Users
-            //                         join post in _context.Posts on user.Id equals post.UserId
-            //                         orderby post.CreateAt descending // Here's the key change for ordering
-            //                         select new UserPostCommentViewModel
-            //                         {
-            //                             UserInfoDetails = new UserInfo
-            //                             {
-            //                                 UserId = user.Id,
-            //                                 FullName = user.UserName,
-            //                             },
-            //                             UserPosts = new List<Post> { post },
-            //                             UserComments = _context.Comments.Where(comment => comment.PostId == post.Id).ToList(),
-            //                         }).ToListAsync();
-
-            //var userPerPost = await (from user in _context.Users
-            //                         join post in _context.Posts on user.Id equals post.UserId
-            //                         orderby post.CreateAt descending
-            //                         select new UserPostCommentViewModel
-            //                         {
-            //                             UserInfoDetails = new UserInfo
-            //                             {
-            //                                 UserId = user.Id,
-            //                                 FullName = user.UserName,
-            //                             },
-            //                             UserPosts = new List<Post> { post },
-            //                             UserComments = _context.Comments.Include(c => c.User).Where(comment => comment.PostId == post.Id).ToList(),
-            //                         }).ToListAsync();
-
-            //var userPerPost = await (from user in _context.Users
-            //             join post in _context.Posts on user.Id equals post.UserId
-            //             orderby post.CreateAt descending
-            //             select new UserPostCommentViewModel
-            //             {
-            //                 UserInfoDetails = new UserInfo
-            //                 {
-            //                     UserId = user.Id,
-            //                     FullName = user.UserName, // Assuming UserName is what you meant by FullName
-            //                     ImageName = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty
-            //                 },
-            //                 UserPosts = new List<Post> { post },
-            //                 UserComments = _context.Comments.Include(c => c.User).Where(comment => comment.PostId == post.Id).ToList(),
-            //                 AppUsers = user
-            //             }).ToListAsync();
 
             var userPerPost = await (from user in _context.Users
                                      join post in _context.Posts on user.Id equals post.UserId
@@ -132,11 +80,13 @@ namespace SimpleSocialMediaPlatform.Controllers
                                              .Select(c => new Comments
                                              {
                                                  Body = c.Body,
-                                                 UserName = c.User.UserName,
+                                                 UserName = c.User.FullName,
+                                                 ImageName = c.ImageName,
                                                  UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty
                                              }).ToList(),
                                          AppUsers = user
                                      }).ToListAsync();
+
 
 
 
@@ -182,14 +132,14 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 // Setting the date here
                 post.CreateAt = DateTime.Now;
-                if (post.ImageFile != null && post.ImageFile.Length > 0)
+                if (post.PostImageFile != null && post.PostImageFile.Length > 0)
                 {
                     try
                     {
                         // Constructing a server-relative path
                         string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
                         // Ensure a unique file name
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.ImageFile.FileName);
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.PostImageFile.FileName);
                         string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                         // Ensuring the directory exists
                         if (!Directory.Exists(uploadsFolder))
@@ -199,11 +149,11 @@ namespace SimpleSocialMediaPlatform.Controllers
                         // Saving the file
                         using (var fileStream = new FileStream(filePath, FileMode.Create))
                         {
-                            await post.ImageFile.CopyToAsync(fileStream);
+                            await post.PostImageFile.CopyToAsync(fileStream);
                         }
                         // Update your model as necessary
-                        post.ImageName = uniqueFileName;
-                        post.ImageUrl = "/Images/" + uniqueFileName; // Relative path
+                        post.PostImageName = uniqueFileName;
+                        post.PostImageUrl = "/Images/" + uniqueFileName; // Relative path
                     }
                     catch (Exception ex)
                     {
@@ -244,7 +194,7 @@ namespace SimpleSocialMediaPlatform.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Titel,Body,CreateAt,UserId")] Post post)
+        public async Task<IActionResult> Edit(int id,  Post post)
         {
             if (id != post.Id)
             {
@@ -261,15 +211,15 @@ namespace SimpleSocialMediaPlatform.Controllers
                         return NotFound();
                     }
 
-                    if (post.ImageFile != null && post.ImageFile.Length > 0)
+                    if (post.PostImageFile != null && post.PostImageFile.Length > 0)
                     {
                         var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
-                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.ImageFile.FileName);
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.PostImageFile.FileName);
                         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
                         using (var fileStream = new FileStream(filePath, FileMode.Create))
                         {
-                            await post.ImageFile.CopyToAsync(fileStream);
+                            await post.PostImageFile.CopyToAsync(fileStream);
                         }
 
                         // Delete the old file if it exists and is different
@@ -283,14 +233,14 @@ namespace SimpleSocialMediaPlatform.Controllers
                         }
 
                         // Update the database entry
-                        post.ImageName = uniqueFileName;
-                        post.ImageUrl = "/Images/" + uniqueFileName; // Update to store relative path
+                        post.PostImageName = uniqueFileName;
+                        post.PostImageUrl = "/Images/" + uniqueFileName; // Update to store relative path
                     }
                     else
                     {
                         // Keep the old image if no new image was uploaded
-                        post.ImageName = existingUser.UserPostImage;
-                        post.ImageUrl = existingUser.ImageUrl;
+                        post.PostImageName = existingUser.UserPostImage;
+                        post.PostImageUrl = existingUser.ImageUrl;
                     }
 
                     _context.Update(post);
@@ -308,7 +258,7 @@ namespace SimpleSocialMediaPlatform.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Posts");
             }
             return View(post);
         }
@@ -348,7 +298,7 @@ namespace SimpleSocialMediaPlatform.Controllers
 
             // If you intend to delete the post only if it does NOT have an associated image
             // Check if the ImageName is null or empty and then decide to delete or not
-            if (string.IsNullOrEmpty(post.ImageName))
+            if (string.IsNullOrEmpty(post.PostImageName))
             {
                 // If no image is associated, then delete the post
                 _context.Posts.Remove(post);
@@ -359,7 +309,7 @@ namespace SimpleSocialMediaPlatform.Controllers
             else
             {
                 // If an image is associated, delete both the post and its image from the filesystem
-                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", post.ImageName);
+                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", post.PostImageName);
                 if (System.IO.File.Exists(imagePath))
                 {
                     System.IO.File.Delete(imagePath);

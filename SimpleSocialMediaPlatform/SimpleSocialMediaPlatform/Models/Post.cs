@@ -18,11 +18,11 @@ namespace SimpleSocialMediaPlatform.Models
         [NotMapped]
         public ApplicationUser? AppUserInfo { get; set; } // This is used for RunTime ONLY
 
-        public string? ImageName { get; set; }
-        public string? ImageUrl { get; set; }
+        public string? PostImageName { get; set; }
+        public string? PostImageUrl { get; set; }
         [NotMapped]
         [DisplayName("Upload File")]
-        public IFormFile? ImageFile { get; set; }
+        public IFormFile? PostImageFile { get; set; }
        
 
     }
