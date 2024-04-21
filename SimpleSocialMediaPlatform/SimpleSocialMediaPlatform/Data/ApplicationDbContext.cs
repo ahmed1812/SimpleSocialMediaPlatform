@@ -21,6 +21,8 @@ namespace SimpleSocialMediaPlatform.Data
                 .WithMany(g => g.Comments)              // Define the collection property in ApplicationUser
                 .HasForeignKey("UserId");               // Specify the foreign key
 
+ 
+
             // You can put additional model configuration here
         }
         public DbSet<Post>? Posts { get; set; }

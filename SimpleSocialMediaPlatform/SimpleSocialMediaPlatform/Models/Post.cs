@@ -23,7 +23,7 @@ namespace SimpleSocialMediaPlatform.Models
         [NotMapped]
         [DisplayName("Upload File")]
         public IFormFile? PostImageFile { get; set; }
-       
 
+        public  ICollection<Comments> Comments { get; set; } = new List<Comments>();
     }
 }

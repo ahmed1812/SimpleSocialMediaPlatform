@@ -192,9 +192,12 @@ namespace SimpleSocialMediaPlatform.Controllers
         // POST: Posts/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        // POST: Posts/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id,  Post post)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Title,Body,PostImageFile")] Post post)
         {
             if (id != post.Id)
             {
@@ -203,65 +206,69 @@ namespace SimpleSocialMediaPlatform.Controllers
 
             if (ModelState.IsValid)
             {
+                var existingPost = await _context.Posts.FindAsync(id);
+                if (existingPost == null)
+                {
+                    return NotFound();
+                }
+
                 try
                 {
-                    var existingUser = await _context.userInfos.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
-                    if (existingUser == null)
-                    {
-                        return NotFound();
-                    }
-
                     if (post.PostImageFile != null && post.PostImageFile.Length > 0)
                     {
+                        // Handling the new image upload
                         var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
                         var uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(post.PostImageFile.FileName);
                         var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        // Delete the old image file if it exists
+                        if (!string.IsNullOrEmpty(existingPost.PostImageName))
                         {
-                            await post.PostImageFile.CopyToAsync(fileStream);
-                        }
-
-                        // Delete the old file if it exists and is different
-                        if (!string.IsNullOrEmpty(existingUser.UserPostImage) && existingUser.UserPostImage != uniqueFileName)
-                        {
-                            var oldFilePath = Path.Combine(uploadsFolder, existingUser.UserPostImage);
+                            var oldFilePath = Path.Combine(uploadsFolder, existingPost.PostImageName);
                             if (System.IO.File.Exists(oldFilePath))
                             {
                                 System.IO.File.Delete(oldFilePath);
                             }
                         }
 
-                        // Update the database entry
-                        post.PostImageName = uniqueFileName;
-                        post.PostImageUrl = "/Images/" + uniqueFileName; // Update to store relative path
-                    }
-                    else
-                    {
-                        // Keep the old image if no new image was uploaded
-                        post.PostImageName = existingUser.UserPostImage;
-                        post.PostImageUrl = existingUser.ImageUrl;
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await post.PostImageFile.CopyToAsync(fileStream);
+                        }
+
+                        // Update the database entry with new file name
+                        existingPost.PostImageName = uniqueFileName;
+                        existingPost.PostImageUrl = "/Images/" + uniqueFileName;
                     }
 
-                    _context.Update(post);
+                    // Update only the fields that should be updated
+                    existingPost.Titel = post.Titel;
+                    existingPost.Body = post.Body;
+                    existingPost.CreateAt = DateTime.Now; // Optionally update the modified date
+
+                    _context.Update(existingPost);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction("Index", new { id = existingPost.Id });
                 }
-                catch (DbUpdateConcurrencyException ex)
+                catch (DbUpdateConcurrencyException)
                 {
-                    if (!PostExists(post.Id))
+                    if (!PostExists(existingPost.Id))
                     {
                         return NotFound();
                     }
                     else
                     {
-                        // Log the exception
-                        throw;
+                        throw;  // Log this exception or handle it as needed
                     }
                 }
-                return RedirectToAction("Index", "Posts");
             }
+
+            // If we get here, something was wrong with the ModelState
             return View(post);
         }
+
+   
+
 
         // GET: Posts/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -282,6 +289,7 @@ namespace SimpleSocialMediaPlatform.Controllers
         }
 
         // POST: Posts/Delete/5
+        // POST: Posts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -290,36 +298,48 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 return Problem("Entity set 'ApplicationDbContext.Posts' is null.");
             }
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts
+                                     .Include(p => p.Comments) // Ensure to include comments in the query
+                                     .FirstOrDefaultAsync(p => p.Id == id);
             if (post == null)
             {
                 return NotFound();
             }
 
-            // If you intend to delete the post only if it does NOT have an associated image
-            // Check if the ImageName is null or empty and then decide to delete or not
-            if (string.IsNullOrEmpty(post.PostImageName))
+            // Deleting associated images from the filesystem
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+            if (!string.IsNullOrEmpty(post.PostImageName))
             {
-                // If no image is associated, then delete the post
-                _context.Posts.Remove(post);
-                await _context.SaveChangesAsync();
-                // Optionally, add logic here if you want to redirect to a different action 
-                // when a post without an image is deleted
-            }
-            else
-            {
-                // If an image is associated, delete both the post and its image from the filesystem
-                string imagePath = Path.Combine(_webHostEnvironment.WebRootPath, "Images", post.PostImageName);
-                if (System.IO.File.Exists(imagePath))
+                string postImagePath = Path.Combine(uploadsFolder, post.PostImageName);
+                if (System.IO.File.Exists(postImagePath))
                 {
-                    System.IO.File.Delete(imagePath);
+                    System.IO.File.Delete(postImagePath);
                 }
-                _context.Posts.Remove(post);
-                await _context.SaveChangesAsync();
             }
+
+            // Delete images associated with each comment (if applicable)
+            foreach (var comment in post.Comments)
+            {
+                if (!string.IsNullOrEmpty(comment.ImageName))
+                {
+                    string commentImagePath = Path.Combine(uploadsFolder, comment.ImageName);
+                    if (System.IO.File.Exists(commentImagePath))
+                    {
+                        System.IO.File.Delete(commentImagePath);
+                    }
+                }
+            }
+
+            // Remove all comments associated with the post
+            _context.Comments.RemoveRange(post.Comments);
+
+            // Finally, remove the post
+            _context.Posts.Remove(post);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Index));
         }
+
 
         private bool PostExists(int id)
         {
