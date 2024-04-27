@@ -61,9 +61,11 @@
             <!-- Address2, City, State, ZipCode can be added in the same manner -->
             <!-- DOB Field -->
             <div class="form-group">
-                <input asp-for="Input.DOB" type="date" class="form-control" />
                 <label asp-for="Input.DOB"></label>
+                <input asp-for="Input.DOB" type="date" class="form-control" />
+                <span asp-validation-for="Input.DOB" class="text-danger"></span>
             </div>
+
 
             <!-- Profile Picture Upload -->
 @*             <div class="mb-3">
@@ -101,4 +103,17 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="//code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#Input_DOB').datepicker({
+                dateFormat: 'mm/dd/yy'
+            });
+        });
+    </script>
+
+
 }

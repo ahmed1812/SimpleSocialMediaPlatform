@@ -11,6 +11,11 @@
 
 
 <div class="container-p">
+@*     <form asp-action="Search" asp-controller="Posts" method="get" class="form-inline">
+        <input type="text" name="userName" class="form-control mb-2 mr-sm-2" placeholder="Search user name">
+        <button type="submit" class="btn btn-primary mb-2">Search</button>
+    </form> *@
+
 
     <!-- Modal Trigger Button (example) -->
     @* <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postModal">
@@ -18,7 +23,7 @@
     </button> *@
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postModal">
-        <i class="fa-solid fa-envelopes-bulk"></i>
+       @*  <i class="fa-solid fa-envelopes-bulk"></i> *@ Add Post
     </button>
 
 
@@ -65,6 +70,8 @@
 
 
     <div class="container-p">
+       @*  @if (Model != null && Model.Any()) *@
+@* { *@
         @foreach (var item in Model)
         {
             <div class="post-container">
@@ -81,13 +88,14 @@
                 @foreach (var p in item.UserPosts)
                 {
                     <div class="post-time">@GetTimeAgo(p.CreateAt)
-                        @if (p.UserId == ViewData["UserID"].ToString()) // Assuming 'UserId' is the property where the creator's ID is stored
-                        {
-                            <div class="post-actions">
-                                <a asp-action="Edit" asp-route-id="@p.Id" class="action-link"><i class="fa-solid fa-user-pen"></i></a>
-                                <a asp-action="Delete" asp-route-id="@p.Id" class="action-link"><i class="fa-solid fa-trash"></i></a>
-                            </div>
-                        }
+                            @if (p.UserId != null && ViewData["UserID"] != null && p.UserId == ViewData["UserID"].ToString())
+                            {
+                                <div class="post-actions">
+                                    <a asp-action="Edit" asp-route-id="@p.Id" class="action-link"><i class="fa-solid fa-user-pen"></i></a>
+                                    <a asp-action="Delete" asp-route-id="@p.Id" class="action-link"><i class="fa-solid fa-trash"></i></a>
+                                </div>
+                            }
+                            
                     
                     </div>
                    
@@ -96,22 +104,19 @@
                         @if (!string.IsNullOrEmpty(p.PostImageName))
                         {
                             var fileExtension = System.IO.Path.GetExtension(p.PostImageName).ToLower();
-                            if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                            if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg" || fileExtension == ".*")
                             {
                                 <img src="@Url.Content("~/Images/" + p.PostImageName)" alt="@p.PostImageName" class="post-image" />
                             }
-                            else if (fileExtension == ".pdf")
-                            {
-                                <iframe src="@Url.Content("~/Images/" + p.PostImageName)" class="post-pdf"></iframe>
-                            }
+                            
                             else
                             {
-                                <div class="no-content">No image or PDF available.</div>
+                                <div class="no-content">No image available.</div>
                             }
                         }
                         else
                         {
-                            <div class="no-content">No image or PDF available.</div>
+                            <div class="no-content">No image available.</div>
                         }
                     </div>
 
@@ -143,22 +148,19 @@
                                     {
                                         var fileExtension = System.IO.Path.GetExtension(c.ImageName).ToLower();
 
-                                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                                        if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg" || fileExtension == ".*")
                                         {
                                             <img src="@Url.Content("~/Images/" + c.ImageName)" alt="@c.ImageName" class="post-image" />
                                         }
-                                        else if (fileExtension == ".pdf")
-                                        {
-                                            <iframe src="@Url.Content("~/Images/" + c.ImageName)" class="post-pdf"></iframe>
-                                        }
+                                        
                                         else
                                         {
-                                            <div class="no-content">No image or PDF available.</div>
+                                            <div class="no-content">No image available.</div>
                                         }
                                     }
                                     else
                                     {
-                                        <div>No image or PDF available.</div>
+                                        <div>No image available.</div>
                                     }
 
                                 </div>
@@ -193,31 +195,30 @@
                                             {
                                                 var fileExtension = System.IO.Path.GetExtension(c.ImageName).ToLower();
 
-                                                if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg")
+                                                if (fileExtension == ".jpg" || fileExtension == ".png" || fileExtension == ".jpeg" || fileExtension == ".*")
                                                 {
                                                     <img src="@Url.Content("~/Images/" + c.ImageName)" alt="@c.ImageName" class="post-image" />
                                                 }
-                                                else if (fileExtension == ".pdf")
-                                                {
-                                                    <iframe src="@Url.Content("~/Images/" + c.ImageName)" class="post-pdf"></iframe>
-                                                }
+                                                
                                                 else
                                                 {
-                                                    <div class="no-content">No image or PDF available.</div>
+                                                    <div class="no-content">No image available.</div>
                                                 }
                                             }
                                             else
                                             {
-                                                <div>No image or PDF available.</div>
+                                                <div>No image available.</div>
                                             }
 
                                         </div>
                                     </div>
                                 }
                             </div>
-                            <button onclick="toggleComments('@p.Id')" class="btn btn-primary show-more"><i class="fa-solid fa-circle-down"></i></button>
+                            <button onclick="toggleComments('@p.Id')" class="btn btn-primary show-more">More</button>
                         }
-
+                        <div class="total-comments">
+                            <strong>Total Comments:</strong> @item.UserComments.Count
+                        </div>
                         <!-- Comment submission form -->
 
                         <form id="commentForm" asp-controller="Comments" asp-action="CreateCommentForPost" method="post" enctype="multipart/form-data">
@@ -232,7 +233,7 @@
                                     <span id="image-upload-name"></span>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary"><i class="fa-regular fa-comment-dots"></i></button>
+                            <button type="submit" class="btn btn-primary">@* <i class="fa-regular fa-comment-dots"></i> *@Add Comment</button>
                         </form>
 
                     </div>
@@ -241,6 +242,11 @@
                 }
             </div>
         }
+      @*   }
+        else
+        {
+            <p>No posts found.</p>
+        } *@
     </div>
 
 
@@ -305,10 +311,10 @@
                     var button = document.querySelector('button[onclick="toggleComments(\'' + postId + '\')"]');
                     if (commentsContainer.style.display === "none") {
                         commentsContainer.style.display = "block";
-                        button.innerHTML = "<i class='fa-solid fa-circle-up'></i>";
+                        button.textContent = "Less";
                     } else {
                         commentsContainer.style.display = "none";
-                        button.innerHTML = "<i class='fa-solid fa-circle-down'></i>";
+                        button.textContent = "More";
                     }
                 }
 

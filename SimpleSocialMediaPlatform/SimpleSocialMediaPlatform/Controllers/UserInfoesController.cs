@@ -13,7 +13,7 @@ using SimpleSocialMediaPlatform.Models;
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
-    public class UserInfoesController : Controller
+    public class UserInfoesController : Controller, DesignPatterns
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;

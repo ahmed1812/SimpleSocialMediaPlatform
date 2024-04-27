@@ -16,7 +16,7 @@ using SimpleSocialMediaPlatform.Models;
 namespace SimpleSocialMediaPlatform.Controllers
 {
     [Authorize]
-    public class PostsController : Controller
+    public class PostsController : Controller, DesignPatterns
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -345,5 +345,43 @@ namespace SimpleSocialMediaPlatform.Controllers
         {
           return (_context.Posts?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+        public async Task<IActionResult> Search(string userName)
+        {
+            if (string.IsNullOrWhiteSpace(userName))
+            {
+                return View("Index", new List<UserPostCommentViewModel>()); // Return empty or all posts optionally
+            }
+
+            var posts = await _context.Users
+                .Where(u => u.FullName.Contains(userName))
+                .SelectMany(u => _context.Posts.Where(p => p.UserId == u.Id))
+                .Select(p => new UserPostCommentViewModel
+                {
+                    UserInfoDetails = new UserInfo
+                    {
+                        UserId = p.UserId,
+                        FullName = p.AppUserInfo.UserName,
+                        UserPostImage = p.AppUserInfo.ProfilePicture != null ? Convert.ToBase64String(p.AppUserInfo.ProfilePicture) : string.Empty
+                    },
+                    UserPosts = new List<Post> { p },
+                    UserComments = _context.Comments
+                        .Include(c => c.User)
+                        .Where(comment => comment.PostId == p.Id)
+                        .Select(c => new Comments
+                        {
+                            Body = c.Body,
+                            UserName = c.User.FullName,
+                            ImageName = c.ImageName,
+                            UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty
+                        }).ToList(),
+                    AppUsers = p.AppUserInfo
+                })
+                .ToListAsync();
+
+
+            return View("Index", posts); // Reuse the Index view with filtered posts
+        }
+
     }
+
 }

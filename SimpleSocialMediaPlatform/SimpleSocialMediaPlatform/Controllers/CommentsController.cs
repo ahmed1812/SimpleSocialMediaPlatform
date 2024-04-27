@@ -16,7 +16,7 @@ using SimpleSocialMediaPlatform.Models;
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
-    public class CommentsController : Controller
+    public class CommentsController : Controller, DesignPatterns
     {
         private readonly ApplicationDbContext _context;
         private readonly IWebHostEnvironment _webHostEnvironment;

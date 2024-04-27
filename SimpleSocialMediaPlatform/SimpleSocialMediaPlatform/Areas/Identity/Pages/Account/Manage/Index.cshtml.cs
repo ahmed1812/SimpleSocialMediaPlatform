@@ -68,6 +68,9 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
 
             [Display(Name = "Profile Picture")]
             public byte[] ProfilePicture { get; set; }
+            [Display(Name = "Date of Birth")]
+            [DataType(DataType.Date)]
+            
             public DateTime DOB { get; set; }
             public DateTime CreateAt { get; set; }
         }
@@ -89,7 +92,7 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
                 State = user.State,
                 ZipCode = user.ZipCode,
                 ProfilePicture = user.ProfilePicture,
-                DOB = user.DOB,
+                DOB = user.DOB == DateTime.MinValue ? DateTime.Today : user.DOB,
                 CreateAt = user.CreateAt
             };
         }
@@ -164,6 +167,13 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             {
                 StatusMessage = "An unexpected error occurred while updating your profile.";
                 return RedirectToPage();
+            }
+            // Check the age to be at least 15 years
+            if (DateTime.Today < Input.DOB.AddYears(15))
+            {
+                ModelState.AddModelError("Input.DOB", "You must be at least 15 years old.");
+                await LoadAsync(user);
+                return Page();
             }
 
             await _signInManager.RefreshSignInAsync(user);
