@@ -5,27 +5,13 @@
 @{
     ViewData["Title"] = "Index";
 }
-<style>
-   
-</style>
 
 
 <div class="container-p">
-@*     <form asp-action="Search" asp-controller="Posts" method="get" class="form-inline">
-        <input type="text" name="userName" class="form-control mb-2 mr-sm-2" placeholder="Search user name">
-        <button type="submit" class="btn btn-primary mb-2">Search</button>
-    </form> *@
-
-
-    <!-- Modal Trigger Button (example) -->
-    @* <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postModal">
-    Create Post
-    </button> *@
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postModal">
-       @*  <i class="fa-solid fa-envelopes-bulk"></i> *@ Add Post
+        <i class="bi bi-plus-circle"></i> &nbsp; Add Post
     </button>
-
 
     <!-- Modal Structure -->
     <div class="modal fade" id="postModal" tabindex="-1" aria-labelledby="postModalLabel" aria-hidden="true">
@@ -70,8 +56,7 @@
 
 
     <div class="container-p">
-       @*  @if (Model != null && Model.Any()) *@
-@* { *@
+        <!-- Posts display section -->
         @foreach (var item in Model)
         {
             <div class="post-container">
@@ -81,7 +66,6 @@
 
                     <div>
                         <strong>@Html.DisplayFor(modelItem => item.AppUsers.FullName)</strong>
-
                     </div>
                 </div>
 
@@ -91,12 +75,10 @@
                             @if (p.UserId != null && ViewData["UserID"] != null && p.UserId == ViewData["UserID"].ToString())
                             {
                                 <div class="post-actions">
-                                    <a asp-action="Edit" asp-route-id="@p.Id" class="action-link"><i class="fa-solid fa-user-pen"></i></a>
-                                    <a asp-action="Delete" asp-route-id="@p.Id" class="action-link"><i class="fa-solid fa-trash"></i></a>
+                                <a asp-action="Edit" asp-route-id="@p.Id" class="btn btn-success mx-2 btnbox"> <i class="bi bi-pencil-square"></i> Edit</a>
+                                <a asp-action="Delete" asp-route-id="@p.Id" class="btn btn-danger mx-2 btnbox"> <i class="bi bi-trash-fill"></i> Delete</a>
                                 </div>
-                            }
-                            
-                    
+                            }                    
                     </div>
                    
                     <div class="post-content">
@@ -119,8 +101,6 @@
                             <div class="no-content">No image available.</div>
                         }
                     </div>
-
-                   
 
                     <div class="comment-container" id="commentsList">
                         @foreach (var c in item.UserComments.Take(2))
@@ -219,8 +199,8 @@
                         <div class="total-comments">
                             <strong>Total Comments:</strong> @item.UserComments.Count
                         </div>
-                        <!-- Comment submission form -->
 
+                        <!-- Comment submission form -->
                         <form id="commentForm" asp-controller="Comments" asp-action="CreateCommentForPost" method="post" enctype="multipart/form-data">
                             <input type="hidden" name="PostId" value="@p.Id" />
                             <input type="hidden" id="UserId" name="UserId" value="@ViewData["UserID"]" />
@@ -233,25 +213,21 @@
                                     <span id="image-upload-name"></span>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">@* <i class="fa-regular fa-comment-dots"></i> *@Add Comment</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle"></i> &nbsp; Add Comment</button>
                         </form>
 
                     </div>
                    
-                   
                 }
             </div>
         }
-      @*   }
-        else
-        {
-            <p>No posts found.</p>
-        } *@
+     
     </div>
-
 
     @section Scripts {
         @{
+            <!-- Scripts for handling asynchronous form submission and UI updates -->
+
             <script>
                 document.addEventListener("DOMContentLoaded", function () {
                     // Assuming `container-p` is a parent element that exists when the page loads and contains all forms
@@ -306,6 +282,7 @@
                     userIdDiv.classList.toggle('d-none');
                 }
 
+                // Toggles comments section visibility
                 function toggleComments(postId) {
                     var commentsContainer = document.getElementById('more-comments-' + postId);
                     var button = document.querySelector('button[onclick="toggleComments(\'' + postId + '\')"]');
@@ -318,6 +295,7 @@
                     }
                 }
 
+                // Functions for relative time display
                 @functions {
                 public string GetTimeAgo(DateTime dateTime)
                 {
@@ -353,9 +331,7 @@
             }
 
         </script>
-
-
-
+            <!-- Loads additional scripts for validation -->
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }
     }

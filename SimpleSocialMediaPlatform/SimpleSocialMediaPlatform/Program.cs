@@ -24,6 +24,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options => options.S
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddAuthentication().AddGoogle(opt =>
+{
+    opt.ClientId = builder.Configuration.GetSection("GoogleKeys:ClientId").Value;
+    opt.ClientSecret = builder.Configuration.GetSection("GoogleKeys:ClientSecret").Value;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,7 +42,6 @@ else
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 

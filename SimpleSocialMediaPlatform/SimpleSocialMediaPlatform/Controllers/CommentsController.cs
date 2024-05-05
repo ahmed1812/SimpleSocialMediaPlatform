@@ -137,52 +137,61 @@ namespace SimpleSocialMediaPlatform.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateCommentForPost(Comments comments)
         {
-            comments.CreateAt = DateTime.Now; // Set the creation time to now
+            // Set the creation time of the comment to the current date and time
+            comments.CreateAt = DateTime.Now;
 
             try
             {
+                // Check if an image file is attached with the comment and that the file is not empty
                 if (comments.ImageFile != null && comments.ImageFile.Length > 0)
                 {
+                    // Define the path where the images will be stored
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Images");
+
+                    // Generate a unique file name for the image to avoid name conflicts
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(comments.ImageFile.FileName);
+
+                    // Combine the path and the unique file name to create the full path for the image
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // Ensure the directory exists; if not, create it
                     if (!Directory.Exists(uploadsFolder))
                     {
                         Directory.CreateDirectory(uploadsFolder);
                     }
+
+                    // Save the image to the specified path
                     using (var fileStream = new FileStream(filePath, FileMode.Create))
                     {
                         await comments.ImageFile.CopyToAsync(fileStream);
                     }
+
+                    // Update the comment object with the image file name and URL
                     comments.ImageName = uniqueFileName;
                     comments.ImageUrl = "/Images/" + uniqueFileName;
                 }
 
-                // Add the comment to the database context and save changes
+                // Add the comment to the database context
                 _context.Add(comments);
+
+                // Save changes to the database asynchronously
                 await _context.SaveChangesAsync();
 
-                // Retrieve user's full name using the UserId
+                // Retrieve the full name of the user who posted the comment, default to "Anonymous" if not found
                 var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == comments.UserId);
                 var userFullName = user?.FullName ?? "Anonymous";
 
+                // Return a JSON response indicating success, along with the comment body and user name
                 return Json(new { success = true, message = "Comment added successfully!", commentBody = comments.Body, userName = userFullName });
             }
             catch (Exception ex)
             {
+                // Log the exception and return a JSON response indicating failure
                 _logger.LogError(ex, "Error adding comment.");
                 return Json(new { success = false, message = "An error occurred while saving the comment." });
-                //return Json(new
-                //{
-                //    success = true,
-                //    message = "Comment added successfully!",
-                //    commentBody = comments.Body,
-                //    userName = comments.User.FullName,
-                //    imageUrl = comments.ImageUrl // Ensure this is included
-                //});
-
             }
         }
+
 
 
 

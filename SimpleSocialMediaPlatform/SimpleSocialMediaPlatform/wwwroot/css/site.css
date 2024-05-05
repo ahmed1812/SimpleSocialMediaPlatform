@@ -522,9 +522,9 @@ input[type="hidden"] {
     margin-right: 5px;
 }
 
-/*   .btn:hover {
-            background-color: #365899;
-        } */
+.btnbox {
+    font-size: 10px;
+}
 
 .btn-close {
     background-color: transparent;

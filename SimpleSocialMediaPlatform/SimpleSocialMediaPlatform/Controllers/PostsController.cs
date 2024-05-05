@@ -3,41 +3,46 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
-using SimpleSocialMediaPlatform.Data;
-using SimpleSocialMediaPlatform.Models;
+using Microsoft.AspNetCore.Authorization; // For authorization attributes
+using Microsoft.AspNetCore.Hosting; // For hosting environment
+using Microsoft.AspNetCore.Identity; // For managing users
+using Microsoft.AspNetCore.Mvc; // For MVC framework
+using Microsoft.EntityFrameworkCore; // For Entity Framework Core
+using Microsoft.Extensions.Hosting; // For hosting environment
+using SimpleSocialMediaPlatform.Data; // For accessing data context
+using SimpleSocialMediaPlatform.Models; // For accessing models
+
 
 namespace SimpleSocialMediaPlatform.Controllers
 {
-    [Authorize]
-    public class PostsController : Controller, DesignPatterns
+    [Authorize] // Requires authentication for accessing controller actions
+    public class PostsController : Controller, DesignPatterns // Inherits from Controller class and implements DesignPatterns interface
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly UserManager<ApplicationUser> _userManager; // Use ApplicationUser if you have a custom user class
+        private readonly ApplicationDbContext _context; // Database context
+        private readonly IWebHostEnvironment _webHostEnvironment; // Hosting environment
+        private readonly UserManager<ApplicationUser> _userManager; // User manager for managing user-related operations
+
 
 
         public PostsController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment, UserManager<ApplicationUser> userManager)
         {
-            _context = context;
-            _webHostEnvironment = webHostEnvironment;
-            _userManager = userManager;
+            _context = context; // Dependency injection for database context
+            _webHostEnvironment = webHostEnvironment; // Dependency injection for hosting environment
+            _userManager = userManager; // Dependency injection for user manager
         }
 
         // GET: Posts
         public async Task<IActionResult> Index()
         {
+            // Retrieve current user's ID
             var UserId = _userManager.GetUserId(User);
+            // Store current user's ID in ViewData
             ViewData["UserID"] = UserId;
+            // Another way to store current user's ID in ViewData
             ViewData["UserID"] = _userManager.GetUserId(this.User);
-            var userId = _userManager.GetUserId(User); // Get the current user's ID
-            var userP = await _userManager.FindByIdAsync(userId); // Find the user
+            var userId = _userManager.GetUserId(User); // Retrieve current user's ID
+            var userP = await _userManager.FindByIdAsync(userId); // Find the user entity asynchronously
+
 
             // Assuming the profile picture is stored as a byte array in the user entity
             var profilePictureBase64 = userP.ProfilePicture != null ? Convert.ToBase64String(userP.ProfilePicture) : string.Empty;
@@ -49,52 +54,47 @@ namespace SimpleSocialMediaPlatform.Controllers
 
             if (userA != null)
             {
-                // Assuming you want the username
+                // If current user exists, set ViewData with username and full name (if available), otherwise default to "Guest"
                 ViewData["UserName"] = userA.UserName;
-
-                // If you have a full name property and prefer to use it if available
                 ViewData["UserFullName"] = string.IsNullOrWhiteSpace(userA.FullName) ? userA.UserName : userA.FullName;
             }
             else
             {
+                // If current user doesn't exist, set ViewData with default values
                 ViewData["UserName"] = "Guest";
                 ViewData["UserFullName"] = "Guest";
             }
 
 
-            var userPerPost = await (from user in _context.Users
-                                     join post in _context.Posts on user.Id equals post.UserId
-                                     orderby post.CreateAt descending
-                                     select new UserPostCommentViewModel
+
+            var userPerPost = await (from user in _context.Users // LINQ query to join Users and Posts tables
+                                     join post in _context.Posts on user.Id equals post.UserId // Joining Users and Posts tables on UserId
+                                     orderby post.CreateAt descending // Ordering posts by creation date in descending order
+                                     select new UserPostCommentViewModel // Projecting the result into a ViewModel
                                      {
-                                         UserInfoDetails = new UserInfo
+                                         UserInfoDetails = new UserInfo // Creating UserInfo object
                                          {
-                                             UserId = user.Id,
-                                             FullName = user.UserName,
-                                             UserPostImage = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty
+                                             UserId = user.Id, // Setting user's ID
+                                             FullName = user.UserName, // Setting user's full name
+                                             UserPostImage = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty // Converting user's profile picture to Base64 string (if exists)
                                          },
-                                         UserPosts = new List<Post> { post },
-                                         UserComments = _context.Comments
-                                             .Include(c => c.User)
-                                             .Where(comment => comment.PostId == post.Id)
-                                             .Select(c => new Comments
+                                         UserPosts = new List<Post> { post }, // Creating a list of posts for the user
+                                         UserComments = _context.Comments // Querying comments associated with the post
+                                             .Include(c => c.User) // Including user details for each comment
+                                             .Where(comment => comment.PostId == post.Id) // Filtering comments by post ID
+                                             .Select(c => new Comments // Projecting comments into Comments ViewModel
                                              {
-                                                 Body = c.Body,
-                                                 UserName = c.User.FullName,
-                                                 ImageName = c.ImageName,
-                                                 UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty
-                                             }).ToList(),
-                                         AppUsers = user
-                                     }).ToListAsync();
+                                                 Body = c.Body, // Setting comment body
+                                                 UserName = c.User.FullName, // Setting commenter's full name
+                                                 ImageName = c.ImageName, // Setting comment image name
+                                                 UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty // Converting commenter's profile picture to Base64 string (if exists)
+                                             }).ToList(), // Converting comments to list
+                                         AppUsers = user // Setting user entity
+                                     }).ToListAsync(); // Executing the query asynchronously and converting result to a list
 
+            return View(userPerPost); // Returning the view with the userPerPost data
 
-
-
-
-            return View(userPerPost);
         }
-
-
 
 
         // GET: Posts/Details/5

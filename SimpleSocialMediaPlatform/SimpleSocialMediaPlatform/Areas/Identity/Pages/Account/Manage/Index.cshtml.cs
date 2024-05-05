@@ -168,8 +168,8 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
                 StatusMessage = "An unexpected error occurred while updating your profile.";
                 return RedirectToPage();
             }
-            // Check the age to be at least 15 years
-            if (DateTime.Today < Input.DOB.AddYears(15))
+            // Check the age to be at least 2 years
+            if (DateTime.Today < Input.DOB.AddYears(2))
             {
                 ModelState.AddModelError("Input.DOB", "You must be at least 15 years old.");
                 await LoadAsync(user);
