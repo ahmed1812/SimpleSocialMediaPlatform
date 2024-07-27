@@ -1,0 +1,7 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+@if (User.IsInRole("Admin"))
+{
+    <a asp-controller="Admin" asp-action="Index">Admin Dashboard</a>
+}
