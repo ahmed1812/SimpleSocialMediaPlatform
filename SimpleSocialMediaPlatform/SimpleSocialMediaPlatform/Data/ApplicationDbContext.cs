@@ -28,6 +28,8 @@ namespace SimpleSocialMediaPlatform.Data
         public DbSet<Post>? Posts { get; set; }
         public DbSet<Comments> Comments { get; set; }
         public DbSet<UserInfo> userInfos { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+
         //public object ApplicationUser { get; internal set; }
         //public DbSet<ApplicationUser> applicationUsers { get; set; }
     }

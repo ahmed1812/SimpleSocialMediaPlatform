@@ -32,70 +32,115 @@ namespace SimpleSocialMediaPlatform.Controllers
         }
 
         // GET: Posts
+        //public async Task<IActionResult> Index()
+        //{
+        //    // Retrieve current user's ID
+        //    var UserId = _userManager.GetUserId(User);
+        //    // Store current user's ID in ViewData
+        //    ViewData["UserID"] = UserId;
+        //    // Another way to store current user's ID in ViewData
+        //    ViewData["UserID"] = _userManager.GetUserId(this.User);
+        //    var userId = _userManager.GetUserId(User); // Retrieve current user's ID
+        //    var userP = await _userManager.FindByIdAsync(userId); // Find the user entity asynchronously
+
+
+        //    // Assuming the profile picture is stored as a byte array in the user entity
+        //    var profilePictureBase64 = userP.ProfilePicture != null ? Convert.ToBase64String(userP.ProfilePicture) : string.Empty;
+
+        //    // Pass the profile picture to the view using ViewData (you could also add it to your model)
+        //    ViewData["ProfilePictureBase64"] = profilePictureBase64;
+
+        //    ApplicationUser userA = await _userManager.GetUserAsync(User);
+
+        //    if (userA != null)
+        //    {
+        //        // If current user exists, set ViewData with username and full name (if available), otherwise default to "Guest"
+        //        ViewData["UserName"] = userA.UserName;
+        //        ViewData["UserFullName"] = string.IsNullOrWhiteSpace(userA.FullName) ? userA.UserName : userA.FullName;
+        //    }
+        //    else
+        //    {
+        //        // If current user doesn't exist, set ViewData with default values
+        //        ViewData["UserName"] = "Guest";
+        //        ViewData["UserFullName"] = "Guest";
+        //    }
+
+
+
+        //    var userPerPost = await (from user in _context.Users // LINQ query to join Users and Posts tables
+        //                             join post in _context.Posts on user.Id equals post.UserId // Joining Users and Posts tables on UserId
+        //                             orderby post.CreateAt descending // Ordering posts by creation date in descending order
+        //                             select new UserPostCommentViewModel // Projecting the result into a ViewModel
+        //                             {
+        //                                 UserInfoDetails = new UserInfo // Creating UserInfo object
+        //                                 {
+        //                                     UserId = user.Id, // Setting user's ID
+        //                                     FullName = user.UserName, // Setting user's full name
+        //                                     UserPostImage = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty // Converting user's profile picture to Base64 string (if exists)
+        //                                 },
+        //                                 UserPosts = new List<Post> { post }, // Creating a list of posts for the user
+        //                                 UserComments = _context.Comments // Querying comments associated with the post
+        //                                     .Include(c => c.User) // Including user details for each comment
+        //                                     .Where(comment => comment.PostId == post.Id) // Filtering comments by post ID
+        //                                     .Select(c => new Comments // Projecting comments into Comments ViewModel
+        //                                     {
+        //                                         Body = c.Body, // Setting comment body
+        //                                         UserName = c.User.FullName, // Setting commenter's full name
+        //                                         ImageName = c.ImageName, // Setting comment image name
+        //                                         UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty // Converting commenter's profile picture to Base64 string (if exists)
+        //                                     }).ToList(), // Converting comments to list
+        //                                 AppUsers = user // Setting user entity
+        //                             }).ToListAsync(); // Executing the query asynchronously and converting result to a list
+
+        //    return View(userPerPost); // Returning the view with the userPerPost data
+
+        //}
+
         public async Task<IActionResult> Index()
         {
-            // Retrieve current user's ID
-            var UserId = _userManager.GetUserId(User);
-            // Store current user's ID in ViewData
-            ViewData["UserID"] = UserId;
-            // Another way to store current user's ID in ViewData
-            ViewData["UserID"] = _userManager.GetUserId(this.User);
-            var userId = _userManager.GetUserId(User); // Retrieve current user's ID
-            var userP = await _userManager.FindByIdAsync(userId); // Find the user entity asynchronously
+            var userId = _userManager.GetUserId(User);
+            ViewData["UserID"] = userId;
 
+            var user = await _userManager.FindByIdAsync(userId);
 
-            // Assuming the profile picture is stored as a byte array in the user entity
-            var profilePictureBase64 = userP.ProfilePicture != null ? Convert.ToBase64String(userP.ProfilePicture) : string.Empty;
-
-            // Pass the profile picture to the view using ViewData (you could also add it to your model)
+            var profilePictureBase64 = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty;
             ViewData["ProfilePictureBase64"] = profilePictureBase64;
+            ViewData["UserName"] = user.UserName;
+            ViewData["UserFullName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
 
-            ApplicationUser userA = await _userManager.GetUserAsync(User);
-
-            if (userA != null)
-            {
-                // If current user exists, set ViewData with username and full name (if available), otherwise default to "Guest"
-                ViewData["UserName"] = userA.UserName;
-                ViewData["UserFullName"] = string.IsNullOrWhiteSpace(userA.FullName) ? userA.UserName : userA.FullName;
-            }
-            else
-            {
-                // If current user doesn't exist, set ViewData with default values
-                ViewData["UserName"] = "Guest";
-                ViewData["UserFullName"] = "Guest";
-            }
-
-
-
-            var userPerPost = await (from user in _context.Users // LINQ query to join Users and Posts tables
-                                     join post in _context.Posts on user.Id equals post.UserId // Joining Users and Posts tables on UserId
-                                     orderby post.CreateAt descending // Ordering posts by creation date in descending order
-                                     select new UserPostCommentViewModel // Projecting the result into a ViewModel
+            var userPerPost = await (from u in _context.Users
+                                     join post in _context.Posts on u.Id equals post.UserId
+                                     orderby post.CreateAt descending
+                                     select new UserPostCommentViewModel
                                      {
-                                         UserInfoDetails = new UserInfo // Creating UserInfo object
+                                         UserInfoDetails = new UserInfo
                                          {
-                                             UserId = user.Id, // Setting user's ID
-                                             FullName = user.UserName, // Setting user's full name
-                                             UserPostImage = user.ProfilePicture != null ? Convert.ToBase64String(user.ProfilePicture) : string.Empty // Converting user's profile picture to Base64 string (if exists)
+                                             UserId = u.Id,
+                                             FullName = u.UserName,
+                                             UserPostImage = u.ProfilePicture != null ? Convert.ToBase64String(u.ProfilePicture) : string.Empty
                                          },
-                                         UserPosts = new List<Post> { post }, // Creating a list of posts for the user
-                                         UserComments = _context.Comments // Querying comments associated with the post
-                                             .Include(c => c.User) // Including user details for each comment
-                                             .Where(comment => comment.PostId == post.Id) // Filtering comments by post ID
-                                             .Select(c => new Comments // Projecting comments into Comments ViewModel
+                                         UserPosts = new List<Post> { post },
+                                         UserComments = _context.Comments.Include(c => c.User)
+                                             .Where(comment => comment.PostId == post.Id)
+                                             .Select(c => new Comments
                                              {
-                                                 Body = c.Body, // Setting comment body
-                                                 UserName = c.User.FullName, // Setting commenter's full name
-                                                 ImageName = c.ImageName, // Setting comment image name
-                                                 UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty // Converting commenter's profile picture to Base64 string (if exists)
-                                             }).ToList(), // Converting comments to list
-                                         AppUsers = user // Setting user entity
-                                     }).ToListAsync(); // Executing the query asynchronously and converting result to a list
+                                                 Body = c.Body,
+                                                 UserName = c.User.FullName,
+                                                 ImageName = c.ImageName,
+                                                 UserProfilePicture = c.User.ProfilePicture != null ? Convert.ToBase64String(c.User.ProfilePicture) : string.Empty
+                                             }).ToList(),
+                                         AppUsers = u
+                                     }).ToListAsync();
 
-            return View(userPerPost); // Returning the view with the userPerPost data
+            var newMessages = await _context.ChatMessages
+                .Where(m => m.ToUserId == userId && !m.IsRead)
+                .OrderBy(m => m.Timestamp)
+                .ToListAsync();
 
+            ViewData["NewMessages"] = newMessages;
+
+            return View(userPerPost);
         }
-
 
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -203,7 +248,6 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 return NotFound();
             }
-
             if (ModelState.IsValid)
             {
                 var existingPost = await _context.Posts.FindAsync(id);
@@ -211,7 +255,6 @@ namespace SimpleSocialMediaPlatform.Controllers
                 {
                     return NotFound();
                 }
-
                 try
                 {
                     if (post.PostImageFile != null && post.PostImageFile.Length > 0)
@@ -240,7 +283,6 @@ namespace SimpleSocialMediaPlatform.Controllers
                         existingPost.PostImageName = uniqueFileName;
                         existingPost.PostImageUrl = "/Images/" + uniqueFileName;
                     }
-
                     // Update only the fields that should be updated
                     existingPost.Titel = post.Titel;
                     existingPost.Body = post.Body;
@@ -262,7 +304,6 @@ namespace SimpleSocialMediaPlatform.Controllers
                     }
                 }
             }
-
             // If we get here, something was wrong with the ModelState
             return View(post);
         }
@@ -381,6 +422,7 @@ namespace SimpleSocialMediaPlatform.Controllers
 
             return View("Index", posts); // Reuse the Index view with filtered posts
         }
+
 
     }
 

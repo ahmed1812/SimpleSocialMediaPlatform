@@ -7,7 +7,30 @@
 }
 
 
+
 <div class="container-p">
+    
+
+    <h2>All Users</h2>
+    <ul class="list-group">
+        @foreach (var user in Model)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@user.UserInfoDetails.FullName</strong>
+                    @if (!string.IsNullOrWhiteSpace(user.UserInfoDetails.UserPostImage))
+                    {
+                        <img src="data:image/jpeg;base64,@user.UserInfoDetails.UserPostImage" alt="User Profile Picture" class="avatar rounded-circle" />
+                    }
+                    else
+                    {
+                        <img src="path/to/default/image.jpg" alt="Default Profile Picture" class="avatar rounded-circle" />
+                    }
+                </div>
+                <a asp-controller="UserInfoes" asp-action="PrivateChat" asp-route-id="@user.UserInfoDetails.UserId" class="btn btn-primary">Chat</a>
+            </li>
+        }
+    </ul>
 
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#postModal">
         <i class="bi bi-plus-circle"></i> &nbsp; Add Post
@@ -221,7 +244,20 @@
                 }
             </div>
         }
-     
+        @if (ViewData["NewMessages"] != null && ((List<ChatMessage>)ViewData["NewMessages"]).Count > 0)
+        {
+            <h3>New Messages</h3>
+            <ul class="list-group">
+                @foreach (var message in (List<ChatMessage>)ViewData["NewMessages"])
+                {
+                    <li class="list-group-item">
+                        <strong>From:</strong> @message.FromUserId<br />
+                        <strong>Message:</strong> @message.Message<br />
+                        <button class="btn btn-primary respond-button" data-to-user-id="@message.FromUserId">Respond</button>
+                    </li>
+                }
+            </ul>
+        }
     </div>
 
     @section Scripts {
@@ -330,7 +366,36 @@
                 }
             }
 
+
+
         </script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    var respondButtons = document.querySelectorAll(".respond-button");
+
+                    respondButtons.forEach(function (button) {
+                        button.addEventListener("click", function () {
+                            var toUserId = button.getAttribute("data-to-user-id");
+                            window.location.href = "/UserInfoes/PrivateChat?id=" + toUserId;
+                        });
+                    });
+
+                    fetch('/api/chat/markAsRead', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(@Html.Raw(Json.Serialize(((List<ChatMessage>)ViewData["NewMessages"]).Select(m => m.Id).ToArray())))
+                    }).then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok.');
+                        }
+                    }).catch(error => {
+                        console.error('There was a problem with the fetch operation:', error);
+                    });
+                });
+            </script>
+
             <!-- Loads additional scripts for validation -->
             await Html.RenderPartialAsync("_ValidationScriptsPartial");
         }

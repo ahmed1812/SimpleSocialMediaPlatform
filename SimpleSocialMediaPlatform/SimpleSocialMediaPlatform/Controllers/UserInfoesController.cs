@@ -255,5 +255,33 @@ namespace SimpleSocialMediaPlatform.Controllers
         {
           return (_context.userInfos?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+        public async Task<IActionResult> PrivateChat(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                return NotFound();
+            }
+
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var currentUserId = _userManager.GetUserId(User);
+            ViewData["CurrentUserId"] = currentUserId;
+            ViewData["ChatWithUserId"] = id;
+            ViewData["ChatWithUserName"] = string.IsNullOrWhiteSpace(user.FullName) ? user.UserName : user.FullName;
+
+            var chatMessages = await _context.ChatMessages
+                .Where(m => (m.FromUserId == currentUserId && m.ToUserId == id) ||
+                            (m.FromUserId == id && m.ToUserId == currentUserId))
+                .OrderBy(m => m.Timestamp)
+                .ToListAsync();
+
+            return View(chatMessages);
+        }
+
     }
 }

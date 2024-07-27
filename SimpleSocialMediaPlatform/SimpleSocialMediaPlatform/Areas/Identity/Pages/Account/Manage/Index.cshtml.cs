@@ -116,13 +116,11 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
-
             if (!ModelState.IsValid)
             {
                 await LoadAsync(user);
                 return Page();
             }
-
             // Update PhoneNumber if changed
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             if (Input.PhoneNumber != phoneNumber)
@@ -134,7 +132,6 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
                     return RedirectToPage();
                 }
             }
-
             // Updating other properties
             user.FullName = Input.FullName ?? user.FullName;
             user.Address = Input.Address ?? user.Address;
@@ -145,7 +142,6 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             user.DOB = Input.DOB != default ? Input.DOB : user.DOB;
             // Assuming CreateAt is not meant to be updated by user form submission
             // If it is, handle similarly to DOB
-
             if (Request.Form.Files.Count > 0)
             {
                 var file = Request.Form.Files.FirstOrDefault();
@@ -160,7 +156,6 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
 
                 await _userManager.UpdateAsync(user);
             }
-
             // Save the updates to the user
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
@@ -175,7 +170,6 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
                 await LoadAsync(user);
                 return Page();
             }
-
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
