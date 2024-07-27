@@ -27,6 +27,13 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li> *@
                         <!-- Additional Nav Items -->
+                        @if (SignInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Roles" asp-action="Index">Manage Roles</a>
+                            </li>
+                        }
+
                     </ul>
                     <!-- Search Form Here -->
                    

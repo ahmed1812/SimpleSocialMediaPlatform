@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SimpleSocialMediaPlatform.Models;
 
@@ -21,7 +22,13 @@ namespace SimpleSocialMediaPlatform.Data
                 .WithMany(g => g.Comments)              // Define the collection property in ApplicationUser
                 .HasForeignKey("UserId");               // Specify the foreign key
 
- 
+            modelBuilder.Entity<ApplicationUser>().ToTable("Users", "security");
+            modelBuilder.Entity<IdentityRole>().ToTable("Roles", "security");
+            modelBuilder.Entity<IdentityUserRole<string>>().ToTable("UserRoles", "security");
+            modelBuilder.Entity<IdentityUserClaim<string>>().ToTable("UserClaims", "security");
+            modelBuilder.Entity<IdentityUserLogin<string>>().ToTable("UserLogins", "security");
+            modelBuilder.Entity<IdentityRoleClaim<string>>().ToTable("RoleClaims", "security");
+            modelBuilder.Entity<IdentityUserToken<string>>().ToTable("UserTokens", "security");
 
             // You can put additional model configuration here
         }

@@ -9,13 +9,13 @@ namespace SimpleSocialMediaPlatform.Models
     {
         //[Key]
         //public int Id { get; set; }
-        public string? FullName { get; set; }
-        public string? Phone { get; set; }
-        public string? Address { get; set; }
-        public string? Address2 { get; set; }
-        public string? City { get; set; }
-        public string? State { get; set; }
-        public string? ZipCode { get; set; }
+        public string? FullName { get; set; } = string.Empty;
+        public string? Phone { get; set; } = string.Empty;
+        public string? Address { get; set; } = string.Empty; // Ensure Address is not null
+        public string? Address2 { get; set; } = string.Empty;
+        public string? City { get; set; } = string.Empty;
+        public string? State { get; set; } = string.Empty;
+        public string? ZipCode { get; set; } = string.Empty;
         public byte[]? ProfilePicture { get; set; }
         public DateTime DOB { get; set; }
         public DateTime CreateAt { get; set; }
