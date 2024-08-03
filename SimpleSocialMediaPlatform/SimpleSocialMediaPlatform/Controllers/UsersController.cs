@@ -87,8 +87,7 @@ namespace SimpleSocialMediaPlatform.Controllers
             {
                 UserName = model.UserName,
                 Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName
+                FullName = model.FullName
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
@@ -107,7 +106,59 @@ namespace SimpleSocialMediaPlatform.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        public async Task<IActionResult> Edit(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
 
+            if (user == null)
+                return NotFound();
+
+            var viewModel = new ProfileFormViewModel
+            {
+                Id = userId,
+                FullName = user.FullName,
+                Email = user.Email
+            };
+
+            return View(viewModel);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(ProfileFormViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByIdAsync(model.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var userWithSameEmail = await _userManager.FindByEmailAsync(model.Email);
+            if (userWithSameEmail != null && userWithSameEmail.Id != model.Id)
+            {
+                ModelState.AddModelError("Email", "This email is already assigned to another user");
+                return View(model);
+            }
+
+            var userWithSameUserName = await _userManager.FindByNameAsync(model.UserName);
+            if (userWithSameUserName != null && userWithSameUserName.Id != model.Id)
+            {
+                ModelState.AddModelError("UserName", "This username is already assigned to another user");
+                return View(model);
+            }
+
+            user.FullName = model.FullName;
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+
+            await _userManager.UpdateAsync(user);
+
+            return RedirectToAction(nameof(Index));
+        }
 
         public async Task<IActionResult> ManageRoles(string userId)
         {
