@@ -8,6 +8,13 @@
 
 <a asp-action="Add" class="btn btn-primary">Add New</a>
 
+<div id="alert" class="alert alert-success alert-dismissible fade show mt-4 d-none" role="alert">
+    User deleted.
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
 <table class="table table-striped mt-4">
     <thead>
         <tr class="bg-primary text-white">
@@ -35,3 +42,45 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.js-delete').on('click', function () {
+                var btn = $(this);
+
+                bootbox.confirm({
+                    message: "Are you sure that you need to delete this user?",
+                    buttons: {
+                        confirm: {
+                            label: 'Yes',
+                            className: 'btn-danger'
+                        },
+                        cancel: {
+                            label: 'No',
+                            className: 'btn-secondary'
+                        },
+                    },
+                    callback: function (result) {
+                        if (result) {
+                            $.ajax({
+                                url: '/api/users/?userId=' + btn.data('id'),
+                                method: 'DELETE',
+                                success: function () {
+                                    btn.parents('tr').fadeOut();
+                                    $('#alert').removeClass('d-none');
+                                    setTimeout(function () {
+                                        $('#alert').addClass('d-none'); // This should probably add the class back to hide the alert after 3 seconds
+                                    }, 3000);
+                                },
+                                error: function () {
+                                    alert('Something went wrong');
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+}
