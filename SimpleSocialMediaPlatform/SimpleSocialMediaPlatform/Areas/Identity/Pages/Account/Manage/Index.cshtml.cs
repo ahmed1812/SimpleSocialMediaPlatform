@@ -9,7 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using SimpleSocialMediaPlatform.Models;
+using SimpleSocialMediaPlatform.ViewModels;
 
 namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
 {
@@ -17,13 +19,17 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager; // Add this line
+
 
         public IndexModel(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+            SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager) // Add this parameter
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager; // Assign it here
         }
 
         /// <summary>
@@ -65,7 +71,7 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             public string City { get; set; }
             public string State { get; set; }
             public string ZipCode { get; set; }
-
+            public string Category { get; set; }
             [Display(Name = "Profile Picture")]
             public byte[] ProfilePicture { get; set; }
             [Display(Name = "Date of Birth")]
@@ -74,6 +80,7 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             public DateTime DOB { get; set; }
             public DateTime CreateAt { get; set; }
         }
+        public List<IdentityRole> Roles { get; set; } // Add this property
 
         private async Task LoadAsync(ApplicationUser user)
         {
@@ -81,6 +88,11 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
 
             Username = userName;
+
+            // Load roles from the database
+            Roles = await _roleManager.Roles
+                              .Where(r => r.Name != "Admin" && r.Name != "User") // Exclude "Admin" role
+                              .ToListAsync();
 
             Input = new InputModel
             {
@@ -93,7 +105,8 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
                 ZipCode = user.ZipCode,
                 ProfilePicture = user.ProfilePicture,
                 DOB = user.DOB == DateTime.MinValue ? DateTime.Today : user.DOB,
-                CreateAt = user.CreateAt
+                CreateAt = user.CreateAt,
+                Category = user.Category
             };
         }
 
@@ -105,9 +118,17 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
+            var roles = await _roleManager.Roles.ToListAsync(); // Assuming _roleManager is injected
+
+            var viewModel = new RoleFormViewModel
+            {
+                Roles = roles
+            };
+
             await LoadAsync(user);
             return Page();
         }
+
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -140,6 +161,7 @@ namespace SimpleSocialMediaPlatform.Areas.Identity.Pages.Account.Manage
             user.State = Input.State ?? user.State;
             user.ZipCode = Input.ZipCode ?? user.ZipCode;
             user.DOB = Input.DOB != default ? Input.DOB : user.DOB;
+            user.Category = Input.Category ?? user.Category;
             // Assuming CreateAt is not meant to be updated by user form submission
             // If it is, handle similarly to DOB
             if (Request.Form.Files.Count > 0)

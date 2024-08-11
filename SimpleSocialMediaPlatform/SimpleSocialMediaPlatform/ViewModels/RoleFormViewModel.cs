@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel.DataAnnotations;
 
 namespace SimpleSocialMediaPlatform.ViewModels
 {
@@ -6,5 +7,7 @@ namespace SimpleSocialMediaPlatform.ViewModels
     {
         [Required, StringLength(256)]
         public string Name { get; set; }
+        // List of roles for the dropdown
+        public List<IdentityRole> Roles { get; set; } = new List<IdentityRole>();
     }
 }
